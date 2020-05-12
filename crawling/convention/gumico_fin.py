@@ -28,7 +28,7 @@ class CrawlClass(object):
             2: 'conven_list.php',
             3: 'event_list.php'
         }
-        self.url_dept2 = 'page={page}&search_text=&search_gubun=B&search_type=year&s_date=&e_date=&search_year={year}&search_month='
+        self.url_dept2 = '?page={page}&search_text=&search_gubun=B&search_type=year&s_date=&e_date=&search_year={year}&search_month='
 
         self.option = webdriver.ChromeOptions()
         self.option.add_argument('window-size=1920x1080')
@@ -36,9 +36,6 @@ class CrawlClass(object):
 
     def run_crawl(self):
         crawl_results = self.crawl()  # 올해 행사일정 크롤링
-        for res in crawl_results:
-            print(res)
-        # self.crawl_append(crawl_results)
         self.cm.close()
         self.driver.close()
 
@@ -47,10 +44,9 @@ class CrawlClass(object):
             self.driver.get(row['source_url'])
             html = self.driver.page_source
             self.soup = Bs(html, 'html.parser')
-            self.page_source = self.soup.select('#primary > div > div > div > div > div.v-contents')
-            event_type = self.soup.select('#primary > div > div > div > div > header > p.type > span')
+            self.page_source = self.soup.select('#PageWrap > div > div.ViewInfo > ol')
+            self.page_source += self.soup.select('#PageWrap > div > div.ViewCont')
             row['page_source'] = str(self.page_source)
-            row['event_type'] = event_type[0].text
             print(row['event_name'])
             self.cm.content_insert(row, 'original')
 
@@ -71,21 +67,20 @@ class CrawlClass(object):
             self.driver.find_element_by_xpath('//*[@id="PageWrap"]/div/form/fieldset/button').click()
 
             # 페이지 길이 구하기.
-            #if i != 2:
-            #    temp_pages = self.driver.find_element_by_xpath('//*[@id="PageWrap"]/div/b').text
-            #    pages = int(temp_pages)/10
-            #    self.length = math.ceil(pages)
-            #else:
-            page_length = self.driver.find_elements_by_xpath('//*[@id="PageWrap"]/div/div[2]/a')
-            self.driver.find_element_by_xpath('//*[@id="PageWrap"]/div/div[2]/a[{}]'.format(len(page_length))).click()
-            self.driver.switch_to.window(self.driver.window_handles[1])
-            self.length = self.driver.find_element_by_xpath('//*[@id="PageWrap"]/div/div[2]/strong').text
-            self.driver.close()
-            self.driver.switch_to.window(self.driver.window_handles[0])
+            first_page_size = self.driver.find_elements_by_xpath('//*[@id="PageWrap"]/div/div[2]/a')
+            first_page_length = self.driver.find_element_by_xpath('//*[@id="PageWrap"]/div/div[2]/a[{}]'.format(len(first_page_size)-2)).text
+            if len(first_page_size) == 4:
+                self.length = 1
+            elif int(first_page_length) < 10 and len(first_page_size) > 4:
+                self.length = first_page_length
+            else:
+                self.driver.switch_to.window(self.driver.window_handles[1])
+                self.length = self.driver.find_element_by_xpath('//*[@id="PageWrap"]/div/div[2]/strong').text
+                self.driver.close()
+                self.driver.switch_to.window(self.driver.window_handles[0])
 
             for page in range(1, int(self.length) + 1):
-                print(page)
-                self.driver.get(self.url.format(page=page, year=now_year))
+                self.driver.get(self.url+self.url_dept1[i]+self.url_dept2.format(page=page, year=now_year))
                 if i != 2:
                     length = self.driver.find_elements_by_xpath('//*[@id="PageWrap"]/div/div[1]/ul/li')
                 else:
@@ -94,21 +89,31 @@ class CrawlClass(object):
                 for content in range(1, len(length) + 1):
                     dic = {}
                     if i != 2:
-                        href_tag = self.driver.find_elements_by_xpath(
-                            '//*[@id="PageWrap"]/div/div[1]/table/tbody/tr[{content}]/th/a'.format(content=content + 1)
-                        )
-                        temp_date = self.driver.find_element_by_xpath(
-                            '//*[@id="PageWrap"]/div/div[1]/ul/li[{content}]/dl/dd/ol/li[1]'.format(
-                                content=content + 1)).text
-                        pattern = r'\s([0-9]*-[0-9]*-[0-9]*)\s'
-                        start_date = re.findall(pattern, temp_date)
+                        check = self.driver.find_elements_by_xpath('//*[@id="PageWrap"]/div/div[1]/ul/li')
+                        # 일정이 1건만 있으면 li 갯수가 없음
+                        if len(check) != 1:
+                            href_tag = self.driver.find_elements_by_xpath(
+                                '//*[@id="PageWrap"]/div/div[1]/ul/li[{content}]/dl/dt/a'.format(content=content)
+                            )
+                            temp_date = self.driver.find_element_by_xpath(
+                                '//*[@id="PageWrap"]/div/div[1]/ul/li[{content}]/dl/dd/ol/li[1]'.format(
+                                    content=content)).text
+                        else:
+                            href_tag = self.driver.find_elements_by_xpath(
+                                '//*[@id="PageWrap"]/div/div[1]/ul/li/dl/dt/a'
+                            )
+                            temp_date = self.driver.find_element_by_xpath(
+                                '//*[@id="PageWrap"]/div/div[1]/ul/li/dl/dd/ol/li[1]').text
+                        pattern = r'\s([0-9]*-[0-9]*-[0-9]*)\s\~'
+                        temp_start_date = re.findall(pattern, temp_date)
+                        start_date = temp_start_date[0].replace('[', '').replace(']', '')
                     else:
                         href_tag = self.driver.find_elements_by_xpath(
-                            '//*[@id="PageWrap"]/div/div[1]/ul/li[{content}]/dl/dt/a'.format(content=content + 1)
+                            '//*[@id="PageWrap"]/div/div[1]/table/tbody/tr[{content}]/th/a'.format(content=content)
                         )
                         temp_date = self.driver.find_element_by_xpath(
                             '//*[@id="PageWrap"]/div/div[1]/table/tbody/tr[{content}]/td[1]'.format(
-                                content=content + 1)).text
+                                content=content)).text
                         start_date = temp_date[0:temp_date.index('~')].strip()
                     event_page_url = href_tag[0].get_attribute('href')
                     event_name = href_tag[0].get_attribute('text')
@@ -123,7 +128,6 @@ class CrawlClass(object):
                     dic['home_page'] = 'http://www.gumico.com/main/main.php'
                     dic['reg_date'] = reg_date
                     compare.append(dic)
-                    print(dic)
         print(compare)
         return compare
 
