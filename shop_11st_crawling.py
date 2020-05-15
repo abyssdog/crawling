@@ -3,8 +3,7 @@ import requests
 from urllib.request import Request, urlopen
 from urllib.parse import urlencode, quote_plus, unquote
 
-API_Key = unquote('jcL0viqxp%2BIpqo2XNQM6qAI%2Bbw5HbnhgWorBckylzA81UC1d48rhhZdWMjMxwvb2slqTgmZpxaC27zWjn83nrQ%3D%3D')
-_API_Key = 'jcL0viqxp%2BIpqo2XNQM6qAI%2Bbw5HbnhgWorBckylzA81UC1d48rhhZdWMjMxwvb2slqTgmZpxaC27zWjn83nrQ%3D%3D'
+API_Key = 'jcL0viqxp+Ipqo2XNQM6qAI+bw5HbnhgWorBckylzA81UC1d48rhhZdWMjMxwvb2slqTgmZpxaC27zWjn83nrQ=='
 
 url = 'http://openapi.animal.go.kr/openapi/service/rest/animalShelterSrvc/shelterInfo'
 queryParams = '?' + urlencode(

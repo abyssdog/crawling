@@ -12,6 +12,7 @@ class CrawlClass(object):
     def __init__(self):
         self.cm = cm.CrawlClass()
         self.now = datetime.datetime.now()
+        self.convention_name = 'exco'
         self.cnt = 1
         self.goal_page = 0
         self.soup = ''

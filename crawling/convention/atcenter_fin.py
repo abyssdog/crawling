@@ -11,6 +11,7 @@ class CrawlClass(object):
         self.cm = cm.CrawlClass()
         self.now = datetime.datetime.now()
         self.url = 'http://www.at.or.kr/ac/event/acko311100/listList.action'
+        self.convention_name = 'atcenter'
         self.soup = ''
         self.select_url = ''
         self.category = {

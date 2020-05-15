@@ -1,5 +1,6 @@
 from bs4 import BeautifulSoup as Bs
 from crawling.convention import conn_mysql as cm
+from crawling.convention import duplicate_check as dc
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 import datetime
@@ -9,7 +10,9 @@ import os
 class CrawlClass(object):
     def __init__(self):
         self.cm = cm.CrawlClass()
+        self.dc = dc.CrawlClass()
         self.now = datetime.datetime.now()
+        self.convention_name = 'bexco'
         self.cnt = 1
         self.soup = ''
         self.length = ''
@@ -23,7 +26,10 @@ class CrawlClass(object):
 
     def run_crawl(self):
         crawl_results = self.crawl()  # 올해 행사일정 크롤링
-        self.crawl_append(crawl_results)
+        results = self.crawl_append(crawl_results)
+        fin_res = self.dc.duplicate_check(results, self.convention_name)
+        # fin_res 를 insert를 시켜주면 된다.
+        self.cm.content_insert(fin_res, 'original')
         self.cm.close()
         self.driver.close()
 
@@ -34,7 +40,8 @@ class CrawlClass(object):
             self.soup = Bs(html, 'html.parser')
             self.page_source = self.soup.select('#contents > div.cont > div.view_wrap')
             row['page_source'] = str(self.page_source)
-            self.cm.content_insert(row, 'original')
+            # self.cm.content_insert(row, 'original')
+        return crawl_results
 
     def crawl(self):
         compare = []
@@ -43,6 +50,7 @@ class CrawlClass(object):
 
         # 올해의 시간을 구함.
         now_year = self.now.strftime('%Y')
+        now_date = self.now.date()
         reg_date = self.now.strftime('%Y-%m-%d %H:%M:%S')
         
         # 크롤링을 위해 탭 이동
@@ -82,15 +90,17 @@ class CrawlClass(object):
                 temp_date = self.driver.find_element_by_xpath(
                     '//*[@id="forPrint"]/div[1]/div/div[{content}]/div[2]/dl/dd[2]'.format(content=content)).text
                 start_date = temp_date[0:temp_date.index('~')].strip().replace('.', '-')
+                event_start_date = datetime.datetime.strptime(start_date, '%Y-%m-%d').date()
 
-                dic['convention_name'] = 'bexco'
-                dic['event_name'] = event_name
-                dic['event_type'] = self.event_type.replace("[", "").replace("]", "")
-                dic['event_start_date'] = datetime.datetime.strptime(start_date, '%Y-%m-%d').date()
-                dic['source_url'] = event_page_url
-                dic['home_page'] = 'http://www.bexco.co.kr/kor/Main.do'
-                dic['reg_date'] = reg_date
-                compare.append(dic)
+                if now_date < event_start_date:
+                    dic['convention_name'] = 'bexco'
+                    dic['event_name'] = event_name
+                    dic['event_type'] = self.event_type.replace("[", "").replace("]", "")
+                    dic['event_start_date'] = event_start_date
+                    dic['source_url'] = event_page_url
+                    dic['home_page'] = 'http://www.bexco.co.kr/kor/Main.do'
+                    dic['reg_date'] = reg_date
+                    compare.append(dic)
 
             if page < int(self.length)+1:
                 if self.cnt < 10:

@@ -1,21 +1,15 @@
-import re
-
 from bs4 import BeautifulSoup as Bs
 from crawling.convention import conn_mysql as cm
 from selenium import webdriver
-from selenium.common.exceptions import TimeoutException
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.support.ui import Select, WebDriverWait
 import datetime
 import os
+import re
 
 
 class CrawlClass(object):
     def __init__(self):
         self.cm = cm.CrawlClass()
         self.now = datetime.datetime.now()
-        self.convention_name = 'setec'
         self.cnt = 1
         self.goal_page = 0
         self.soup = ''
@@ -23,9 +17,7 @@ class CrawlClass(object):
         self.select_url = ''
         self.event_type = ''
         self.page_source = ''
-        self.url = 'http://setec.or.kr/fus/bbs/selectBoardList.do' \
-                   '?menuId=MNU_0000000000000053&bbsId=BBSMSTR_000000000032'
-        self.url_dept = '&searchCnd=99&pageIndex={page}'
+        self.url = 'http://www.interpark.com/pet/home.do?_method=initial&smid1=s_menu&smid2=pet'
 
         self.option = webdriver.ChromeOptions()
         self.option.add_argument('window-size=1920x1080')
