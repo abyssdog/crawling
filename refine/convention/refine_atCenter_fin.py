@@ -7,10 +7,12 @@ import re
 class CrawlClass(object):
     def __init__(self):
         self.convention_name = 'atcenter'
+        self.now = datetime.datetime.now()
 
     def insert(self):
         cc = cm.CrawlClass()
         rows = cc.content_select(self.convention_name)
+        crawl_version = self.now.strftime('%Y%m%d')
         cnt = 0
         for row in rows:
             data = {}
@@ -85,6 +87,7 @@ class CrawlClass(object):
                 data['money'] = money[0]
                 data['source_url'] = at_url
                 data['reg_date'] = reg_date
+                data['crawl_version'] = crawl_version
                 cc.content_insert(data)
         cc.commit()
         cc.close()

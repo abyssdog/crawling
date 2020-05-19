@@ -68,7 +68,7 @@ class CrawlClass(object):
                     break
         return checked_list
 
-    def dic_insert(self, event_name, event_type, start_date, event_page_url, reg_date):
+    def dic_insert(self, event_name, event_type, start_date, event_page_url, reg_date, crawl_date):
         dic = {
             'convention_name': 'gsco',
             'event_name': event_name,
@@ -76,7 +76,8 @@ class CrawlClass(object):
             'event_start_date': datetime.datetime.strptime(start_date, '%Y-%m-%d').date(),
             'source_url': event_page_url,
             'home_page': 'http://www.gsco.kr/',
-            'reg_date': reg_date
+            'reg_date': reg_date,
+            'crawl_version': crawl_date
         }
         return dic
     
@@ -96,6 +97,7 @@ class CrawlClass(object):
         # 올해의 시간을 구함.
         now_year = self.now.strftime('%Y')
         reg_date = self.now.strftime('%Y-%m-%d %H:%M:%S')
+        crawl_date = self.now.strftime('%Y%m%d')
 
         self.driver.maximize_window()
         for month in range(1, 13):
@@ -121,7 +123,7 @@ class CrawlClass(object):
                                 pattern = r'\/[a-zA-Z]*_(.*).png'
                                 temp_event_type2 = re.findall(pattern, temp_event_type1)
                                 event_type = self.event_type_check(temp_event_type2[0].replace("'", ""))
-                                dic = self.dic_insert(event_name, event_type, start_date, event_page_url, reg_date)
+                                dic = self.dic_insert(event_name, event_type, start_date, event_page_url, reg_date, crawl_date)
                                 compare.append(dic)
                         else:
                             event_name = event.text
@@ -135,7 +137,7 @@ class CrawlClass(object):
                             pattern = r'\/[a-zA-Z]*_(.*).png'
                             temp_event_type2 = re.findall(pattern, temp_event_type1)
                             event_type = self.event_type_check(temp_event_type2[0].replace("'", ""))
-                            dic = self.dic_insert(event_name, event_type, start_date, event_page_url, reg_date)
+                            dic = self.dic_insert(event_name, event_type, start_date, event_page_url, reg_date, crawl_date)
                             compare.append(dic)
                         self.flag = True
                     except TimeoutException:

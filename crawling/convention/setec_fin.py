@@ -56,6 +56,7 @@ class CrawlClass(object):
         # 올해의 시간을 구함.
         now_year = self.now.strftime('%Y')
         reg_date = self.now.strftime('%Y-%m-%d %H:%M:%S')
+        crawl_date = self.now.strftime('%Y%m%d')
 
         # 올해 년도 검색 - 검색결과가 제대로 반영안되서 의미 없음.
         '''self.driver.execute_script('document.getElementsByName("noticeStartDt")[0].removeAttribute("readonly")')
@@ -110,6 +111,7 @@ class CrawlClass(object):
                 dic['source_url'] = event_page_url
                 dic['home_page'] = 'http://setec.or.kr/'
                 dic['reg_date'] = reg_date
+                dic['crawl_version'] = crawl_date
                 compare.append(dic)
         return compare
 

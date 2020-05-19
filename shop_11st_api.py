@@ -20,4 +20,7 @@ def api(keyword):
 
 
 if __name__ == '__main__':
-    api('dog')
+    # api('dog')
+    t = [1, 5, 7, 33, 39, 52]
+    for p in enumerate(t):
+        print(p)

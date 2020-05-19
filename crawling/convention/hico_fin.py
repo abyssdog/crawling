@@ -57,6 +57,7 @@ class CrawlClass(object):
         # 올해의 시간을 구함.
         now_year = self.now.strftime('%Y')
         reg_date = self.now.strftime('%Y-%m-%d %H:%M:%S')
+        crawl_date = self.now.strftime('%Y%m%d')
 
         # 올해 년도 검색
         self.driver.find_element_by_xpath('//*[@id="searchStartDate"]').clear()
@@ -99,6 +100,7 @@ class CrawlClass(object):
                 dic['source_url'] = '-'
                 dic['home_page'] = 'http://www.crowncity.kr/hico/ko/main/main.do'
                 dic['reg_date'] = reg_date
+                dic['crawl_version'] = crawl_date
 
                 href_tag[0].click()
                 time.sleep(0.5)

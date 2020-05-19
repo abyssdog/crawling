@@ -67,6 +67,7 @@ class CrawlClass(object):
         # 올해의 시간을 구함.
         # now_year = self.now.strftime('%Y')
         reg_date = self.now.strftime('%Y-%m-%d %H:%M:%S')
+        crawl_date = self.now.strftime('%Y%m%d')
 
         # 페이지 길이 구하기.
         temp_pages = self.driver.find_element_by_xpath('//*[@id="content"]/p[3]/span').text
@@ -93,6 +94,7 @@ class CrawlClass(object):
                 dic['source_url'] = event_page_url
                 dic['home_page'] = 'https://www.exco.co.kr/kor/index.html'
                 dic['reg_date'] = reg_date
+                dic['crawl_version'] = crawl_date
                 compare.append(dic)
         print(compare)
         return compare

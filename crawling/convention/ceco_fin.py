@@ -52,6 +52,7 @@ class CrawlClass(object):
         # 올해의 시간을 구함.
         now_year = self.now.strftime('%Y')
         reg_date = self.now.strftime('%Y-%m-%d %H:%M:%S')
+        crawl_date = self.now.strftime('%Y%m%d')
 
         # 연간 행사일정 위해 해당 년도 입력
         self.driver.find_element(By.XPATH, '//*[@id="sdate"]').clear()
@@ -98,6 +99,7 @@ class CrawlClass(object):
                 dic['source_url'] = event_page_url
                 dic['home_page'] = 'https://www.ceco.co.kr/'
                 dic['reg_date'] = reg_date
+                dic['crawl_version'] = crawl_date
                 compare.append(dic)
 
             if page % 10 != 0:

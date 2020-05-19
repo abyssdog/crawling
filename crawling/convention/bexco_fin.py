@@ -27,9 +27,10 @@ class CrawlClass(object):
     def run_crawl(self):
         crawl_results = self.crawl()  # 올해 행사일정 크롤링
         results = self.crawl_append(crawl_results)
-        fin_res = self.dc.duplicate_check(results, self.convention_name)
+        # fin_res = self.dc.duplicate_check(results, self.convention_name)
         # fin_res 를 insert를 시켜주면 된다.
-        self.cm.content_insert(fin_res, 'original')
+        for res in results:
+            self.cm.content_insert(res, 'original')
         self.cm.close()
         self.driver.close()
 
@@ -52,6 +53,7 @@ class CrawlClass(object):
         now_year = self.now.strftime('%Y')
         now_date = self.now.date()
         reg_date = self.now.strftime('%Y-%m-%d %H:%M:%S')
+        crawl_date = self.now.strftime('%Y%m%d')
         
         # 크롤링을 위해 탭 이동
         self.driver.find_element_by_xpath('//*[@id="contents"]/div[2]/div[4]/ul/li[2]/a').click()
@@ -92,15 +94,16 @@ class CrawlClass(object):
                 start_date = temp_date[0:temp_date.index('~')].strip().replace('.', '-')
                 event_start_date = datetime.datetime.strptime(start_date, '%Y-%m-%d').date()
 
-                if now_date < event_start_date:
-                    dic['convention_name'] = 'bexco'
-                    dic['event_name'] = event_name
-                    dic['event_type'] = self.event_type.replace("[", "").replace("]", "")
-                    dic['event_start_date'] = event_start_date
-                    dic['source_url'] = event_page_url
-                    dic['home_page'] = 'http://www.bexco.co.kr/kor/Main.do'
-                    dic['reg_date'] = reg_date
-                    compare.append(dic)
+                #if now_date < event_start_date:
+                dic['convention_name'] = 'bexco'
+                dic['event_name'] = event_name
+                dic['event_type'] = self.event_type.replace("[", "").replace("]", "")
+                dic['event_start_date'] = event_start_date
+                dic['source_url'] = event_page_url
+                dic['home_page'] = 'http://www.bexco.co.kr/kor/Main.do'
+                dic['reg_date'] = reg_date
+                dic['crawl_version'] = crawl_date
+                compare.append(dic)
 
             if page < int(self.length)+1:
                 if self.cnt < 10:

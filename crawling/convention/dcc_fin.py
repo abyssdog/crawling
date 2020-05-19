@@ -63,6 +63,7 @@ class CrawlClass(object):
         # 올해의 시간을 구함.
         now_year = self.now.strftime('%Y')
         reg_date = self.now.strftime('%Y-%m-%d %H:%M:%S')
+        crawl_date = self.now.strftime('%Y%m%d')
         cnt = 0
         first_page_size = self.driver.find_elements_by_xpath('//*[@id="page_num"]/div/span')
         for page in range(1, len(first_page_size)):
@@ -93,6 +94,7 @@ class CrawlClass(object):
                     dic['source_url'] = url_value[0].replace('(', '').replace(')', '')
                     dic['home_page'] = 'http://www.dcckorea.or.kr/'
                     dic['reg_date'] = reg_date
+                    dic['crawl_version'] = crawl_date
                     compare.append(dic)
                 else:
                     self.flag = False

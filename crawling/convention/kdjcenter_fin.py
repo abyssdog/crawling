@@ -58,6 +58,7 @@ class CrawlClass(object):
         now_year = self.now.strftime('%Y')
         now_month = self.now.strftime('%m')
         reg_date = self.now.strftime('%Y-%m-%d %H:%M:%S')
+        crawl_date = self.now.strftime('%Y%m%d')
         month_last_day = calendar.monthrange(int(now_year), 12)
 
         self.driver.get(self.url.format(now_start=now_year+'-01-01', now_end=now_year+'-12-'+str(month_last_day[1])))
@@ -111,6 +112,7 @@ class CrawlClass(object):
                 dic['source_url'] = event_page_url
                 dic['home_page'] = 'https://www.kdjcenter.or.kr/kor/'
                 dic['reg_date'] = reg_date
+                dic['crawl_version'] = crawl_date
                 compare.append(dic)
 
             if self.cnt != int(self.length):

@@ -53,6 +53,7 @@ class CrawlClass(object):
         # 올해 년도 구하기
         now_year = self.now.strftime('%Y')
         reg_date = self.now.strftime('%Y-%m-%d %H:%M:%S')
+        crawl_date = self.now.strftime('%Y%m%d')
 
         # 올해 년도 입력후 검색
         self.driver.find_element_by_xpath('//*[@id="sYear"]').send_keys(now_year)
@@ -97,6 +98,7 @@ class CrawlClass(object):
                 dic['source_url'] = ''
                 dic['home_page'] = 'http://www.iccjeju.co.kr/'
                 dic['reg_date'] = reg_date
+                dic['crawl_version'] = crawl_date
 
                 self.driver.find_element_by_xpath(
                     '//*[@id="sub_wrapper"]/div/div[2]/section/div[2]/div[3]/table/tbody/tr[{content}]/td[3]/a'.format(

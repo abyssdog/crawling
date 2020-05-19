@@ -37,6 +37,7 @@ class CrawlClass(object):
 
     def run_crawl(self):
         crawl_results = self.crawl()  # 올해 행사일정 크롤링
+        self.crawl_append(crawl_results)
         self.cm.close()
         self.driver.close()
 
@@ -60,6 +61,7 @@ class CrawlClass(object):
             # 올해의 시간을 구함.
             now_year = self.now.strftime('%Y')
             reg_date = self.now.strftime('%Y-%m-%d %H:%M:%S')
+            crawl_date = self.now.strftime('%Y%m%d')
 
             # 올해 년도 검색
             self.driver.find_element_by_xpath('//*[@id="year"]').click()
@@ -128,6 +130,7 @@ class CrawlClass(object):
                     dic['source_url'] = event_page_url
                     dic['home_page'] = 'http://www.gumico.com/main/main.php'
                     dic['reg_date'] = reg_date
+                    dic['crawl_version'] = crawl_date
                     compare.append(dic)
         print(compare)
         return compare

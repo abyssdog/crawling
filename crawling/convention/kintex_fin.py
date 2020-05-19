@@ -53,8 +53,10 @@ class CrawlClass(object):
         # 올해의 시간을 구함.
         now_year = self.now.strftime('%Y')
         reg_date = self.now.strftime('%Y-%m-%d %H:%M:%S')
+        crawl_date = self.now.strftime('%Y%m%d')
 
         # 올해 년도 검색
+        self.driver.find_element_by_xpath('//*[@id="sidebar"]/ul/li[1]/a').click()
         self.driver.find_element_by_xpath('//*[@id="radio_period2"]').click()
         select = Select(self.driver.find_element_by_xpath(
             '//*[@id="content"]/div[2]/div[1]/form/div/div/dl[3]/dd/select'))
@@ -73,7 +75,8 @@ class CrawlClass(object):
                 self.length = first_page_length
             else:
                 self.driver.find_element_by_xpath('//*[@id="content"]/div[2]/div[2]/ul/li[14]/a').click()
-                self.length = self.driver.find_element_by_xpath('//*[@id="content"]/div[2]/div[2]/ul/li[4]/strong').text
+                max_length = self.driver.find_elements_by_xpath('//*[@id="content"]/div[2]/div[2]/ul/li')
+                self.length = self.driver.find_element_by_xpath('//*[@id="content"]/div[2]/div[2]/ul/li[{}]/strong'.format(len(max_length)-2)).text
                 self.driver.find_element_by_xpath('//*[@id="content"]/div[2]/div[2]/ul/li[1]/a').click()
 
         for page in range(1, int(self.length)+1):
@@ -96,11 +99,13 @@ class CrawlClass(object):
 
                 dic['convention_name'] = 'kintex'
                 dic['event_name'] = event_name
+                print(event_name)
                 dic['event_type'] = self.event_type.replace("[", "").replace("]", "")
                 dic['event_start_date'] = datetime.datetime.strptime(start_date, '%Y-%m-%d').date()
                 dic['source_url'] = event_page_url
                 dic['home_page'] = 'https://www.kintex.com/'
                 dic['reg_date'] = reg_date
+                dic['crawl_version'] = crawl_date
                 compare.append(dic)
         return compare
 

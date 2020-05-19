@@ -49,6 +49,7 @@ class CrawlClass(object):
         # 올해의 시간을 구함.
         now_year = self.now.strftime('%Y')
         reg_date = self.now.strftime('%Y-%m-%d %H:%M:%S')
+        crawl_date = self.now.strftime('%Y%m%d')
 
         self.driver.get(self.url.format(page=1, start_date='{year}-01-01'.format(year=now_year), end_date='{year}-12-30'.format(year=now_year)))
         self.driver.maximize_window()
@@ -98,6 +99,7 @@ class CrawlClass(object):
                 dic['source_url'] = event_page_url
                 dic['home_page'] = 'http://www.coex.co.kr/'
                 dic['reg_date'] = reg_date
+                dic['crawl_version'] = crawl_date
                 compare.append(dic)
         print(compare)
         return compare

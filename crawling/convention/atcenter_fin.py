@@ -27,7 +27,9 @@ class CrawlClass(object):
     def run_crawl(self):
         crawl_result = self.crawl_atcenter()  # 올해 행사일정 크롤링
         select_result = self.content_select()  # 크롤링 해온 일정 전체 셀렉트
-        checked_list = self.duplicate_check(crawl_result, select_result)  # 중복체크
+        for check_row in crawl_result:
+            self.cm.content_insert(check_row, 'original')
+        #checked_list = self.duplicate_check(crawl_result, select_result)  # 중복체크
         #self.get_page(crawl_result)  # 중복아닌 데이터 저장
         self.cm.close()
         self.driver.close()
@@ -40,6 +42,7 @@ class CrawlClass(object):
         # 올해의 시간을 구함.
         now_year = self.now.strftime('%Y')
         reg_date = self.now.strftime('%Y-%m-%d %H:%M:%S')
+        crawl_date = self.now.strftime('%Y%m%d')
 
         # 연간 행사일정 위해 해당 년도 입력
         self.driver.find_element(By.XPATH, '//*[@id="dP1"]').clear()
@@ -58,6 +61,7 @@ class CrawlClass(object):
                     '//*[@id="printArea"]/div/div[{category}]/table/tbody/tr[{tr}]/th/a'.format(
                         category=category, tr=tr)
                 )
+                print(href_tag[0].get_attribute('text'))
                 event_page_url = href_tag[0].get_attribute('href')
                 event_name = href_tag[0].get_attribute('text')
                 temp_date = self.driver.find_element_by_xpath(
@@ -83,6 +87,7 @@ class CrawlClass(object):
                 dic['source_url'] = event_page_url
                 dic['home_page'] = 'http://www.at.or.kr/home/acko000000/index.action'
                 dic['reg_date'] = reg_date
+                dic['crawl_version'] = crawl_date
                 compare.append(dic)
         return compare
 

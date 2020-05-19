@@ -31,7 +31,7 @@ def run():
         'beauty': 'https://www.animal.go.kr/front/awtis/shop/salesList.do?totalCount=6711&pageSize=10&sWrkCd=F&menuNo=6000000130&&page={}',
         'funeral': 'https://www.animal.go.kr/front/awtis/shop/undertaker1List.do?totalCount=44&pageSize=10&menuNo=6000000131&&page={}'
     }
-    temp = category[0]
+    temp = category[3]
     for page in range(1, page[temp]+1):
         time.sleep(2)
         response = requests.get(url[temp].format(page))
@@ -57,17 +57,17 @@ def run():
                 arr['address'] = tds[3].text.strip()  # 회사 주소
                 arr['home_page'] = "-"'''
                 # production, importation, sales
-                '''arr['company'] = tds[2].text.strip()  # 회사 이름
+                arr['company'] = tds[2].text.strip()  # 회사 이름
                 arr['ceo'] = '-'  # 사장 이름 : 병원은 없음
                 arr['phone'] = tds[3].text.strip()  # 전화 번호
                 arr['address'] = tds[4].text.strip()  # 회사 주소
-                arr['home_page'] = "-"  # 홈페이지'''
+                arr['home_page'] = "-"  # 홈페이지
                 # protection
-                arr['company'] = tds[1].text.strip()  # 회사 이름
+                '''arr['company'] = tds[1].text.strip()  # 회사 이름
                 arr['ceo'] = '-'  # 사장 이름 : 병원은 없음
                 arr['phone'] = tds[2].text.strip()  # 전화 번호
                 arr['address'] = tds[3].text.strip()  # 회사 주소
-                arr['home_page'] = "-"  # 홈페이지
+                arr['home_page'] = "-"  # 홈페이지'''
                 # puneral
                 '''arr['company'] = tds[1].text.strip()  # 회사 이름
                 arr['ceo'] = '-'  # 사장 이름 : 병원은 없음
@@ -92,7 +92,7 @@ def save(arr, keyword):
                '데이터 확장 방법', '데이터 확장 참조', '등록자', '수정자', '등록일', '수정일', '키워드'))
     # DB 모든 데이터 엑셀로
     cnt = 0
-    for row in arr:
+    for row in arr+1:
         cnt += 1
         temp_str = row['address']
         try:
@@ -111,7 +111,7 @@ def save(arr, keyword):
             else:
                 c_var = '-'
                 d_var = '-'
-        a = 'A3113_' + str(cnt).rjust(4, '0')  # ok
+        a = 'A0112' + str(cnt).rjust(4, '0')  # ok
         b = row['company']  # 여기에 업체명
         c = c_var  # 여기에는 지역 대구분 ex) 시, 도
         d = d_var  # 여기는 지역 소구분 ex) 구 동
@@ -134,12 +134,12 @@ def save(arr, keyword):
         r = '이준재'
         s = date_now
         t = date_now
-        u = '#동물보호센터'
+        u = '#반려동물사육시설, 동물생산업'
         insert = (a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s, t, u)
         ws.append(insert)
         print(insert)
         # row[1] : 업체명, row[2] : 대표명, row[3] : 전화번호, row[4] : 주소
-    wb.save('C:/workSpace/flask_crawling/originalDatas/A3113_반려동물_보호센터.xlsx')
+    wb.save('C:/workSpace/flask_crawling/originalDatas/A0112_반려동물_사육시설.xlsx')
 
 
 if __name__ == '__main__':

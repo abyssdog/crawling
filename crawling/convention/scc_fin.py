@@ -60,6 +60,7 @@ class CrawlClass(object):
 
         now = datetime.datetime.now()
         reg_date = now.strftime('%Y-%m-%d %H:%M:%S')
+        crawl_date = self.now.strftime('%Y%m%d')
 
         # 행사일정 페이지 접속후 리스트 페이지로 이동.
         self.driver.find_element_by_xpath('//*[@id="calendar"]/div/div/div/div/div/div[2]/div[1]/div/div[2]/div').click()
@@ -100,6 +101,7 @@ class CrawlClass(object):
             dic['source_url'] = event_page_url
             dic['home_page'] = 'https://www.scc.or.kr/'
             dic['reg_date'] = reg_date
+            dic['crawl_version'] = crawl_date
             compare.append(dic)
         return compare
 

@@ -66,7 +66,7 @@ class CrawlClass(object):
                     break
         return checked_list
 
-    def dic_insert(self, event_name, event_type, start_date, event_page_url, reg_date):
+    def dic_insert(self, event_name, event_type, start_date, event_page_url, reg_date, crawl_date):
         dic = {
             'convention_name': 'songdoconvensia',
             'event_name': event_name,
@@ -74,7 +74,8 @@ class CrawlClass(object):
             'event_start_date': datetime.datetime.strptime(start_date, '%Y-%m-%d').date(),
             'source_url': event_page_url,
             'home_page': 'https://songdoconvensia.visitincheon.or.kr/sch/main.do',
-            'reg_date': reg_date
+            'reg_date': reg_date,
+            'crawl_version': crawl_date
         }
         return dic
 
@@ -94,6 +95,7 @@ class CrawlClass(object):
         # 올해의 시간을 구함.
         now_year = self.now.strftime('%Y')
         reg_date = self.now.strftime('%Y-%m-%d %H:%M:%S')
+        crawl_date = self.now.strftime('%Y%m%d')
         self.driver.maximize_window()
 
         for month in range(1, 13):
@@ -120,7 +122,7 @@ class CrawlClass(object):
                                 start_date = now_year + '-' + str(month).zfill(2) + '-' + day.zfill(2)
                                 temp_event_type = event.find_element_by_xpath('//*[@id="tab2"]/table/tbody/tr[{row}]/td[{col}]/div/a[{idx}]'.format(row=row, col=col, idx=idx+1)).get_attribute('class')
                                 event_type = self.event_type_check(temp_event_type.replace("'", ""))
-                                dic = self.dic_insert(event_name, event_type, start_date, fin_url, reg_date)
+                                dic = self.dic_insert(event_name, event_type, start_date, fin_url, reg_date, crawl_date)
                                 compare.append(dic)
                         else:
                             event_name = event.text
@@ -135,7 +137,7 @@ class CrawlClass(object):
                             temp_event_type = event.find_element_by_xpath('//*[@id="tab2"]/table/tbody/tr[{row}]/td[{col}]/div/a'.format(row=row, col=col)).get_attribute('class')
 
                             event_type = self.event_type_check(temp_event_type.replace("'", ""))
-                            dic = self.dic_insert(event_name, event_type, start_date, fin_url, reg_date)
+                            dic = self.dic_insert(event_name, event_type, start_date, fin_url, reg_date, crawl_date)
                             compare.append(dic)
                     except TimeoutException:
                         continue
