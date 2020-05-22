@@ -4,12 +4,15 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 import datetime
 import os
+import time
+import urllib.request
 
 
 class CrawlClass(object):
     def __init__(self):
         self.cm = cm.CrawlClass()
         self.now = datetime.datetime.now()
+        self.base_url = 'http://www.at.or.kr'
         self.url = 'http://www.at.or.kr/ac/event/acko311100/listList.action'
         self.convention_name = 'atcenter'
         self.soup = ''
@@ -26,11 +29,11 @@ class CrawlClass(object):
 
     def run_crawl(self):
         crawl_result = self.crawl_atcenter()  # 올해 행사일정 크롤링
-        select_result = self.content_select()  # 크롤링 해온 일정 전체 셀렉트
+        # select_result = self.content_select()  # 크롤링 해온 일정 전체 셀렉트
         for check_row in crawl_result:
             self.cm.content_insert(check_row, 'original')
-        #checked_list = self.duplicate_check(crawl_result, select_result)  # 중복체크
-        #self.get_page(crawl_result)  # 중복아닌 데이터 저장
+        # checked_list = self.duplicate_check(crawl_result, select_result)  # 중복체크
+        # self.get_page(crawl_result)  # 중복아닌 데이터 저장
         self.cm.close()
         self.driver.close()
 
@@ -73,10 +76,23 @@ class CrawlClass(object):
                     '//*[@id="printArea"]/div/div[{category}]/table/tbody/tr[{tr}]/th/a'.format(
                         category=category, tr=tr)
                 ).click()
+                time.sleep(0.5)
+                ab = datetime.datetime.now()
                 html = self.driver.page_source
                 self.soup = Bs(html, 'html.parser')
                 page_source = self.soup.select('#printArea > div > div.board > table > tbody > tr:nth-child(1)')
-                page_source += self.soup.select('#printArea > div > div.board > table > tbody > tr.con')
+                page_source += self.soup.select('#printArea > div > div.board > table > tbody > tr.con > td')
+                event_ctn = page_source[1].text
+                img_source = self.soup.select('#printArea > div > div.board > table >'
+                                              ' tbody > tr:nth-child(1) > td > a > img')
+                date_now = ab.strftime('%Y%m%d%H%M%S')
+                file_name = date_now + str(ab.microsecond)
+                if len(img_source) > 0:
+                    urllib.request.urlretrieve(self.base_url+img_source[0].attrs.get('src'), '../../originalDatas/' +
+                                               file_name+'.png')
+                    img_src = file_name+'.png'
+                else:
+                    img_src = ''
                 self.driver.back()
 
                 dic['convention_name'] = 'atCenter'
@@ -88,6 +104,8 @@ class CrawlClass(object):
                 dic['home_page'] = 'http://www.at.or.kr/home/acko000000/index.action'
                 dic['reg_date'] = reg_date
                 dic['crawl_version'] = crawl_date
+                dic['img_src'] = img_src
+                dic['ctn'] = event_ctn
                 compare.append(dic)
         return compare
 

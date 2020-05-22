@@ -21,8 +21,8 @@ class CrawlClass(object):
     def content_insert(self, data, flag):
         curs = self.conn.cursor()
         query_event = """insert into event_original
-        (convention_name, event_name, event_type, event_start_date, page_source, source_url, home_page, reg_date, crawl_version) 
-        values(%s, %s, %s, %s, %s, %s, %s, %s, %s)
+        (convention_name, event_name, event_type, event_start_date, page_source, ctn, source_url, img_src, reg_date, crawl_version) 
+        values(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
         """
         #for data in datas:
         if flag == 'original':
@@ -32,8 +32,9 @@ class CrawlClass(object):
                           data.get('event_type'),
                           data.get('event_start_date'),
                           data.get('page_source'),
+                          data.get('ctn'),
                           data.get('source_url'),
-                          data.get('home_page'),
+                          data.get('img_src'),
                           data.get('reg_date'),
                           data.get('crawl_version')
                           ))

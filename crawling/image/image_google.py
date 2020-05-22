@@ -64,13 +64,13 @@ if __name__ == '__main__':
     # 구글의 크롤링 방지 정책으로 60개까지만 가져올수있음.
     # 그래서 키워드를 나눠서 가져옴. 각각 60개씩 가져옴. 4*2*60개
     cgi = CrawlingGoogleImage()
-    #for s in cgi.sufix:
-    #    for p in cgi.prefix:
-    #        cgi.crawl(p+" "+s)
-    a = cgi.get_dir()
-    print(a)
-    base_dir = os.path.dirname(os.path.abspath(__file__))
-    print(base_dir)
-    b = os.path.relpath('../../originalDatas', base_dir)
-    print(b)
-    print(os.path.abspath('../..//all_image_crawler/2020/4'))
+    for s in cgi.sufix:
+        for p in cgi.prefix:
+            cgi.crawl(p+" "+s)
+    # a = cgi.get_dir()
+    # print(a)
+    # base_dir = os.path.dirname(os.path.abspath(__file__))
+    # print(base_dir)
+    # b = os.path.relpath('../../originalDatas', base_dir)
+    # print(b)
+    # print(os.path.abspath('../..//all_image_crawler/2020/4'))

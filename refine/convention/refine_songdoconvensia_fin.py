@@ -1,4 +1,4 @@
-from refine.convention import conn_mysql as cm
+from refine.convention import common as cm
 import datetime
 import re
 

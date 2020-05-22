@@ -29,15 +29,15 @@ if __name__ == '__main__':
     search_list = ["반려동물", "반려동물이벤트", "반려동물행사", "반려동물교육", "반려동물자격증", "반려동물직업",
                    "반려동물산업", "반려동물상품"]
     # 조회 조건은 date:최신순, sim:정확도 2가지 있음.
-    for key in search_list:
+    '''for key in search_list:
         api_blog_first.naver_blog_crawling(key, 100, "date")
     for key in search_list:
         api_cafe_first.naver_cafe_crawling(key, 100, "date")
     for key in search_list:
         api_web_first.naver_web_crawling(key, 100, "date")
-    crawl_counting.run()
+    crawl_counting.run()'''
     #api_blog_fullText.run()
     #api_cafe_fullText.run()
     #api_web_fullText.run()
     cgi = cgi()
-    #cgi.run()
+    cgi.run()

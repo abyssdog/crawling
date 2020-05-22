@@ -1,16 +1,18 @@
+# coding=utf-8
 from bs4 import BeautifulSoup as Bs
 from crawling.convention import conn_mysql as cm
-from crawling.convention import duplicate_check as dc
+from urllib.parse import quote
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 import datetime
 import os
+# import time
+import urllib.request
 
 
 class CrawlClass(object):
     def __init__(self):
         self.cm = cm.CrawlClass()
-        self.dc = dc.CrawlClass()
         self.now = datetime.datetime.now()
         self.convention_name = 'bexco'
         self.cnt = 1
@@ -19,6 +21,7 @@ class CrawlClass(object):
         self.select_url = ''
         self.event_type = ''
         self.page_source = ''
+        self.base_url = 'http://www.bexco.co.kr'
         self.url = 'http://www.bexco.co.kr/kor//EventSchedule/main.do?mCode=MN0015'
         self.option = webdriver.ChromeOptions()
         self.option.add_argument('window-size=1920x1080')
@@ -40,7 +43,24 @@ class CrawlClass(object):
             html = self.driver.page_source
             self.soup = Bs(html, 'html.parser')
             self.page_source = self.soup.select('#contents > div.cont > div.view_wrap')
+            event_cotent = self.soup.select('#contents > div.cont > div.view_wrap > div.detail_sec')
+            row['ctn'] = event_cotent[0].text
             row['page_source'] = str(self.page_source)
+            temp_img_src = self.soup.select('#contents > div.cont > div.view_wrap > div.info_sec > p > img')
+            if len(temp_img_src) == 0:
+                img_source = self.soup.select('#contents > div.cont > div.view_wrap > div.info_sec > p > a > img')
+            else:
+                img_source = temp_img_src
+            ab = datetime.datetime.now()
+            date_now = ab.strftime('%Y%m%d%H%M%S')
+            file_name = date_now + str(ab.microsecond)
+            if len(img_source) > 0:
+                temp_src = img_source[0].attrs.get('src')
+                urllib.request.urlretrieve(self.base_url + quote(temp_src), '../../originalDatas/' + file_name + '.png')
+                img_src = file_name + '.png'
+            else:
+                img_src = ''
+            row['img_src'] = img_src
             # self.cm.content_insert(row, 'original')
         return crawl_results
 
@@ -51,7 +71,7 @@ class CrawlClass(object):
 
         # 올해의 시간을 구함.
         now_year = self.now.strftime('%Y')
-        now_date = self.now.date()
+        # now_date = self.now.date()
         reg_date = self.now.strftime('%Y-%m-%d %H:%M:%S')
         crawl_date = self.now.strftime('%Y%m%d')
         
@@ -94,7 +114,7 @@ class CrawlClass(object):
                 start_date = temp_date[0:temp_date.index('~')].strip().replace('.', '-')
                 event_start_date = datetime.datetime.strptime(start_date, '%Y-%m-%d').date()
 
-                #if now_date < event_start_date:
+                # if now_date < event_start_date:
                 dic['convention_name'] = 'bexco'
                 dic['event_name'] = event_name
                 dic['event_type'] = self.event_type.replace("[", "").replace("]", "")
