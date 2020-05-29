@@ -1,12 +1,14 @@
+# coding=utf-8
 from bs4 import BeautifulSoup as Bs
 from crawling.convention import conn_mysql as cm
+from urllib.parse import quote
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 import datetime
 import os
 import re
-
-_dict = {}
+# import time
+import urllib.request
 
 
 class CrawlClass(object):
@@ -29,7 +31,9 @@ class CrawlClass(object):
 
     def run_crawl(self):
         crawl_results = self.crawl()  # 올해 행사일정 크롤링
-        self.crawl_append(crawl_results)
+        results = self.crawl_append(crawl_results)
+        for res in results:
+            self.cm.content_insert(res, 'original')
         self.cm.close()
         self.driver.close()
 
@@ -39,8 +43,29 @@ class CrawlClass(object):
             html = self.driver.page_source
             self.soup = Bs(html, 'html.parser')
             self.page_source = self.soup.select('#bo_v_atc')
+            event_content = self.soup.select('#bo_v_con > div.event_ctt')
+            if len(event_content) == 0:
+                row['ctn'] = ''
+            else:
+                row['ctn'] = event_content[0].text
             row['page_source'] = str(self.page_source)
-            self.cm.content_insert(row, 'original')
+            temp_img_src = self.soup.select('#bo_v_img > a > img')
+            '''if len(temp_img_src) == 0:
+                img_source = self.soup.select('#contents > div.cont > div.view_wrap > div.info_sec > p > a > img')
+            else:
+                img_source = temp_img_src'''
+            ab = datetime.datetime.now()
+            date_now = ab.strftime('%Y%m%d%H%M%S')
+            file_name = date_now + str(ab.microsecond)
+            if len(temp_img_src) > 0:
+                temp_src = temp_img_src[0].attrs.get('src')
+                urllib.request.urlretrieve(temp_src, '../../originalDatas/' + file_name + '.png')
+                img_src = file_name + '.png'
+            else:
+                img_src = ''
+            row['img_src'] = img_src
+            #self.cm.content_insert(row, 'original')
+        return crawl_results
 
     def crawl(self):
         first = 1

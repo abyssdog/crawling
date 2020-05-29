@@ -66,14 +66,14 @@ class CrawlClass(object):
 
     def crawl(self):
         compare = []
-        self.driver.get(self.url)
-        self.driver.maximize_window()
-
         # 올해의 시간을 구함.
         now_year = self.now.strftime('%Y')
         # now_date = self.now.date()
         reg_date = self.now.strftime('%Y-%m-%d %H:%M:%S')
         crawl_date = self.now.strftime('%Y%m%d')
+
+        self.driver.get(self.url)
+        self.driver.maximize_window()
         
         # 크롤링을 위해 탭 이동
         self.driver.find_element_by_xpath('//*[@id="contents"]/div[2]/div[4]/ul/li[2]/a').click()

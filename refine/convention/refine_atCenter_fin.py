@@ -10,7 +10,7 @@ class CrawlClass(object):
         self.convention_name = 'atcenter'
         self.now = datetime.datetime.now()
 
-    def insert(self):
+    def refine(self):
         cc = cm.CrawlClass()
         crawl_version = self.now.strftime('%Y%m%d')
         rows = cc.original_select(self.convention_name, crawl_version)
@@ -136,4 +136,4 @@ class CrawlClass(object):
 
 if __name__ == '__main__':
     crawl = CrawlClass()
-    crawl.insert()
+    crawl.refine()

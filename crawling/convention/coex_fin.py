@@ -1,9 +1,15 @@
+# coding=utf-8
+from urllib import parse
+
 from bs4 import BeautifulSoup as Bs
 from crawling.convention import conn_mysql as cm
+from urllib.parse import quote
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 import datetime
 import os
+# import time
+import urllib.request
 
 
 class CrawlClass(object):
@@ -37,14 +43,26 @@ class CrawlClass(object):
             self.soup = Bs(html, 'html.parser')
             self.page_source = self.soup.select('#primary > div > div > div > div > div.v-contents')
             event_type = self.soup.select('#primary > div > div > div > div > header > p.type > span')
+            event_content = self.soup.select('#primary > div > div > div > div > div.v-contents > div.exhi-summary.clearfix > div.summary-desc')
+            row['ctn'] = event_content[0].text
             row['page_source'] = str(self.page_source)
             row['event_type'] = event_type[0].text
-            print(row['event_name'])
+            temp_img_src = self.soup.select('#primary > div > div > div > div > div.v-contents > div.exhi-info.clearfix > img')
+            ab = datetime.datetime.now()
+            date_now = ab.strftime('%Y%m%d%H%M%S')
+            file_name = date_now + str(ab.microsecond)
+            if len(temp_img_src) > 0:
+                temp_src = temp_img_src[0].attrs.get('src')
+                a = parse.urlparse(temp_src)
+                print(a)
+                urllib.request.urlretrieve(quote(temp_src), '../../originalDatas/' + file_name + '.png')
+                img_src = file_name + '.png'
+            else:
+                img_src = ''
+            row['img_src'] = img_src
             self.cm.content_insert(row, 'original')
 
     def crawl(self):
-        first = 1
-        second = 1
         compare = []
         # 올해의 시간을 구함.
         now_year = self.now.strftime('%Y')
@@ -53,13 +71,6 @@ class CrawlClass(object):
 
         self.driver.get(self.url.format(page=1, start_date='{year}-01-01'.format(year=now_year), end_date='{year}-12-30'.format(year=now_year)))
         self.driver.maximize_window()
-
-        # 연간 행사일정 위해 해당 년도 입력
-        #self.driver.find_element(By.XPATH, '//*[@id="calendar-start"]').clear()
-        #self.driver.find_element(By.XPATH, '//*[@id="calendar-start"]').send_keys('{year}-05-01'.format(year=now_year))
-        #self.driver.find_element(By.XPATH, '//*[@id="calendar-end"]').clear()
-        #self.driver.find_element(By.XPATH, '//*[@id="calendar-end"]').send_keys('{year}-12-30'.format(year=now_year))
-        #self.driver.find_element(By.XPATH, '//*[@id="search"]').click()
 
         # 페이지 길이 구하기.
         pages = self.driver.find_elements_by_xpath('//*[@id="primary"]/div/div/div/div/dl/dd/div/a')
@@ -81,20 +92,16 @@ class CrawlClass(object):
                         content=content)
                 )
                 event_page_url = href_tag[0].get_attribute('href')
-                # event_name = href_tag[0].get_attribute('text')
                 event_name = self.driver.find_element_by_xpath(
                     '//*[@id="primary"]/div/div/div/div/dl/dd/ul/li[{content}]/div/ul/li[2]/a/span[1]'.format(content=content)
                 ).text
 
-                #self.event_type = self.driver.find_element_by_xpath(
-                #    '//*[@id="gall_ul"]/li[{content}]/div/div[2]/div[2]/a[1]'.format(content=content)).text
                 temp_date = self.driver.find_element_by_xpath(
                     '//*[@id="primary"]/div/div/div/div/dl/dd/ul/li[{content}]/div/ul/li[3]'.format(content=content)).text
                 start_date = temp_date[0:temp_date.index('~')].strip()
 
                 dic['convention_name'] = 'coex'
                 dic['event_name'] = event_name.strip().replace(r'\n', '')
-                #dic['event_type'] = self.event_type
                 dic['event_start_date'] = datetime.datetime.strptime(start_date, '%Y-%m-%d').date()
                 dic['source_url'] = event_page_url
                 dic['home_page'] = 'http://www.coex.co.kr/'
@@ -107,4 +114,8 @@ class CrawlClass(object):
 
 if __name__ == '__main__':
     crawl = CrawlClass()
-    crawl.run_crawl()
+#    crawl.run_crawl()
+    a = parse.urlparse('http://210.116.77.61/wp-content/uploads/2020/05/코엑스-제출-엠블럼200507-300x198.png')
+    q = parse.parse_qs(a.query)
+    b = parse.urlencode(q, doseq=True)
+    print(b)

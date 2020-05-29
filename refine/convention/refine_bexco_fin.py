@@ -10,7 +10,7 @@ class CrawlClass(object):
         self.convention_name = 'bexco'
         self.now = datetime.datetime.now()
 
-    def insert(self):
+    def refine(self):
         cc = cm.CrawlClass()
         crawl_version = self.now.strftime('%Y%m%d')
         rows = cc.original_select(self.convention_name, crawl_version)
@@ -28,14 +28,14 @@ class CrawlClass(object):
             else:
                 pet_cat_cd = ''
                 match = False
-            pattern_addt_dtl = r'\<dt\>장소\<\/dt\>\n\<dd\>(.*?)\<\/dd\>'
-            pattern_cost = r'\<dt\>관람료\<\/dt\>\n\<dd\>(.*?)\<\/dd\>'
-            pattern_date = r'\<dt\>기간<\/dt\>\n\<dd\>(.*?)\<\/dd\>'
-            pattern_home = r'\<dt\>홈페이지\<\/dt\>\n\<dd\>\n\t*\<a.*\"\>(.*?)\<\/a\>\n\t*\<\/dd\>'
             pattern_host = r'\<dt\>주최\/주관\<\/dt\>\n\<dd\>(.*?)\<\/dd\>'
-            pattern_phone = r'\<dt\>전화\<\/dt\>\n\<dd\>\n\t{4}(.*?)\n\t{4}\<\/dd\>'
             # pattern_supvsn = r'<li><span class="tit">주관<\/span>(.*?)<\/li>'
+            pattern_addt_dtl = r'\<dt\>장소\<\/dt\>\n\<dd\>(.*?)\<\/dd\>'
+            pattern_date = r'\<dt\>기간<\/dt\>\n\<dd\>(.*?)\<\/dd\>'
             pattern_time = r'\<dt\>시간\<\/dt\>\n\<dd\>(.*?)\<\/dd\>'
+            pattern_cost = r'\<dt\>관람료\<\/dt\>\n\<dd\>(.*?)\<\/dd\>'
+            pattern_phone = r'\<dt\>전화\<\/dt\>\n\<dd\>\n\t{4}(.*?)\n\t{4}\<\/dd\>'
+            pattern_home = r'\<dt\>홈페이지\<\/dt\>\n\<dd\>\n\t*\<a.*\"\>(.*?)\<\/a\>\n\t*\<\/dd\>'
             # pattern_ctn = r''
             reg_date = self.now.strftime('%Y-%m-%d %H:%M:%S')
             source_url = row[7]
@@ -67,6 +67,7 @@ class CrawlClass(object):
                     str_time = time[0]
                 else:
                     str_time = ''
+
                 cost = re.findall(pattern_cost, row[5])
                 if len(cost) > 0:
                     str_cost = cost[0]
@@ -131,4 +132,4 @@ class CrawlClass(object):
 
 if __name__ == '__main__':
     crawl = CrawlClass()
-    crawl.insert()
+    crawl.refine()
