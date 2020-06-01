@@ -1,6 +1,7 @@
 import math
 
 from bs4 import BeautifulSoup as Bs
+from selenium.webdriver import ActionChains
 from selenium.webdriver.common.keys import Keys
 
 from crawling.convention import conn_mysql as cm
@@ -28,8 +29,8 @@ class CrawlClass(object):
         self.select_url = ''
         self.event_type = ''
         self.page_source = ''
-        self.base_url = 'https://www.google.com'
-        self.url_a = 'https://www.google.com/search?hl=ko&sxsrf=ALeKk02GqW_Cv0EhuQg3ZoQGWCxpzRm25w%3A1590743776960&source=hp&ei=4NLQXrrFOMXT-QbU5rzgBw&q=%EB%8F%99%EB%AC%BC+%EC%98%81%ED%99%94&oq=%EB%8F%99%EB%AC%BC+%EC%98%81%ED%99%94&gs_lcp=CgZwc3ktYWIQAzICCAAyAggAMgIIADIGCAAQBRAeMgYIABAFEB4yBggAEAUQHjIGCAAQBRAeMgYIABAFEB4yBggAEAUQHjIGCAAQBRAeOgcIIxDqAhAnOgQIIxAnOgUIABCDAToECAAQQzoHCAAQRhD_AVCvFViJImDjI2gBcAB4AIABogGIAfALkgEEMC4xM5gBAKABAaoBB2d3cy13aXqwAQo&sclient=psy-ab&ved=0ahUKEwi6tYKu3tjpAhXFad4KHVQzD3wQ4dUDCAc&uact=5'
+        self.base_url = 'https://www.youtube.com/'
+        self.url_a = 'https://www.youtube.com/results?search_query=%EB%B0%98%EB%A0%A4%EB%8F%99%EB%AC%BC&sp=CAMSAhAC'
 
         self.option = webdriver.ChromeOptions()
         self.option.add_argument('window-size=1920x1080')
@@ -58,14 +59,23 @@ class CrawlClass(object):
         #     self.driver.get(self.url_p)
         self.driver.maximize_window()
         time.sleep(0.5)
-        movie_list = self.driver.find_elements_by_xpath('//*[@id="extabar"]/div[2]/div/div[2]/div/g-scrolling-carousel/div[1]/div[1]/a')
+        while True:
+            try:
+                time.sleep(0.5)
+                last = self.driver.find_element_by_xpath('//*[@id="contents"]/ytd-message-renderer').text
+                if last == '결과가 더 이상 없습니다.':
+                    break
+            except NoSuchElementException:
+                ActionChains(self.driver).send_keys(Keys.PAGE_DOWN).perform()
 
-        for movie in movie_list:
-            arr = {}
-            arr['movie_url'] = movie.get_attribute('href')
-            arr['movie_name'] = movie.get_attribute('aria-label')
-            print(arr['movie_name'])
-            res.append(arr)
+        length = self.driver.find_elements_by_xpath('//*[@id="contents"]/ytd-channel-renderer')
+        for content in range(1, len(length)):
+            youtube_name = self.driver.find_element_by_xpath('//*[@id="contents"]/ytd-channel-renderer[{content}]/div/div[2]/a/div[1]/ytd-channel-name/div/div/yt-formatted-string'.format(content=content)).text
+            href_tag = self.driver.find_elements_by_xpath(
+                '//*[@id="contents"]/ytd-channel-renderer[{content}]/div/div[2]/a'.format(
+                    content=content))
+            youtube_url = href_tag[0].get_attribute('href')
+            print(youtube_name+''+youtube_url)
         return res
 
     def append(self, lis):
