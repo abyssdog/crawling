@@ -1,11 +1,16 @@
+# coding=utf-8
 from bs4 import BeautifulSoup as Bs
 from crawling.convention import conn_mysql as cm
+from urllib import parse
+from urllib.parse import quote
 from selenium import webdriver
-# from selenium.webdriver.common.by import By
+from selenium.webdriver.common.by import By
 import datetime
-import os
 import math
+import os
 import re
+import time
+import urllib.request
 
 
 class CrawlClass(object):
@@ -19,6 +24,7 @@ class CrawlClass(object):
         self.length = ''
         self.select_url = ''
         self.event_type = ''
+        self.base_url = 'https://www.exco.co.kr/'
         self.page_source = ''
         self.url = 'https://www.exco.co.kr/kor/program/schedule_year.html?gotoPage={page}&Ex_cate=&' \
                    'host=&event_name=&term=&search_word=&Start_year=&End_year=&Start_Month=&End_Month=' \
@@ -41,8 +47,12 @@ class CrawlClass(object):
             self.soup = Bs(html, 'html.parser')
             self.page_source = self.soup.select('#content > div.schview_con > ul.schview_txt')
             self.page_source += self.soup.select('#tab1')
+            event_content = self.soup.select('#tab1')
+            if len(event_content) > 0:
+                row['ctn'] = event_content[0].text
+            else:
+                row['ctn'] = ''
             row['page_source'] = str(self.page_source)
-
             temp_event_type = self.soup.select('#content > div.t_schview > img')
             pattern = r'\_(\w*).gif'
             event_type_list = re.findall(pattern, temp_event_type[0].attrs.get('src'))
@@ -55,8 +65,25 @@ class CrawlClass(object):
             else:
                 event_type = '행사'
             row['event_type'] = event_type
-
             print(row['event_name'])
+
+            img_source = self.soup.select('#content > div.schview_con > ul.schview_img > li.view_poster > img')
+            ab = datetime.datetime.now()
+            date_now = ab.strftime('%Y%m%d%H%M%S')
+            file_name = date_now + str(ab.microsecond)
+            if len(img_source) > 0:
+                temp_src = img_source[0].attrs.get('src')
+                if '/kor/images/common/noimg.gif' != temp_src:
+                    encoding_url = parse.urlparse(temp_src)
+                    # urllib.request.urlretrieve(self.base_url + quote(temp_src), '../../originalDatas/' + file_name + '.png')
+                    urllib.request.urlretrieve(self.base_url + quote(encoding_url.path), '../../originalDatas/' + file_name + '.png')
+                    img_src = file_name + '.png'
+                else:
+                    img_src = ''
+            else:
+                img_src = ''
+            row['img_src'] = img_src
+
             self.cm.content_insert(row, 'original')
 
     def crawl(self):
@@ -89,7 +116,6 @@ class CrawlClass(object):
 
                 dic['convention_name'] = 'exco'
                 dic['event_name'] = event_name
-                # dic['event_type'] = self.event_type.replace("[", "").replace("]", "")
                 dic['event_start_date'] = datetime.datetime.strptime(start_date, '%Y-%m-%d').date()
                 dic['source_url'] = event_page_url
                 dic['home_page'] = 'https://www.exco.co.kr/kor/index.html'

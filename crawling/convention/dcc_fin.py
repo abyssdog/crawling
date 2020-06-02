@@ -1,17 +1,14 @@
-import time
-
+# coding=utf-8
 from bs4 import BeautifulSoup as Bs
 from crawling.convention import conn_mysql as cm
+from urllib.parse import quote
 from selenium import webdriver
-# from selenium.webdriver import ActionChains
 from selenium.webdriver.common.by import By
-from selenium.common.exceptions import TimeoutException
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.support.ui import Select, WebDriverWait
 import datetime
 import os
-# import math
 import re
+import time
+import urllib.request
 
 
 class CrawlClass(object):
@@ -40,12 +37,19 @@ class CrawlClass(object):
 
     def crawl_append(self, crawl_results):
         for row in crawl_results:
+            time.sleep(0.5)
             # self.driver.get(row['source_url'])
             self.driver.execute_script("javascript:goView({});".format(row['source_url']))
             html = self.driver.page_source
             self.soup = Bs(html, 'html.parser')
             self.page_source = self.soup.select('#notice_tb > tbody')
+            event_content = self.soup.select('#notice_tb > tbody > tr:nth-child(6) > td')
+            if len(event_content) > 0:
+                row['ctn'] = event_content[0].text
+            else:
+                row['ctn'] = ''
             row['page_source'] = str(self.page_source)
+            row['img_src'] = ''
             print(row['event_name'])
             self.cm.content_insert(row, 'original')
 

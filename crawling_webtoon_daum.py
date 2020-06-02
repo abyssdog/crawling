@@ -46,10 +46,6 @@ class CrawlClass(object):
 
     def crawl(self, key):
         res = []
-        # 올해 년도 구하기
-        now_month = self.now.strftime('%m')
-        now_month = self.now.month
-        reg_date = self.now.strftime('%Y-%m-%d %H:%M:%S')
 
         self.driver.maximize_window()
         cnt = 0

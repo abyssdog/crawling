@@ -59,6 +59,19 @@ class CrawlClass(object):
     def close(self):
         self.conn.close()
 
+    def latest_crawl_version(self, convention_name):
+        curs = self.conn.cursor()
+        sql = """ SELECT crawl_version
+                    FROM event_original
+                   WHERE convention_name = '{convention_name}'
+                   GROUP BY crawl_version
+                   ORDER BY crawl_version DESC
+                   LIMIT 1
+                   """.format(convention_name=convention_name)
+        curs.execute(sql)
+        rows = curs.fetchall()
+        return rows
+
     def original_select(self, convention_name, crawl_version):
         curs = self.conn.cursor()
         sql = """ SELECT *

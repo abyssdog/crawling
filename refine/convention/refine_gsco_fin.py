@@ -1,114 +1,136 @@
+from bs4 import BeautifulSoup as Bs
 from refine.convention import common as cm
 import datetime
 import re
+import urllib.request
 
 
 class CrawlClass(object):
     def __init__(self):
         self.convention_name = 'gsco'
+        self.now = datetime.datetime.now()
 
-    def test_insert1(self):
+    def refine(self):
         cc = cm.CrawlClass()
-        rows = cc.content_select(self.convention_name)
-        cnt = 0
+        crawl_version = self.now.strftime('%Y%m%d')
+        rows = cc.original_select(self.convention_name, crawl_version)
+        convention_info = cc.convention_select(self.convention_name)
         for row in rows:
             data = {}
-            cnt += 1
-            title_gsco = r'\<h3\>(.*)\<\/h3\>'
-            title_pattern = r"(캣|도그|펫|동물|애견|애완|더존비즈온)"  # row[3] => 페이지소스
-            # match = re.findall(title_gsco, row[3])  # 제목을 먼저 찾아낸다
-            match2 = re.search(title_pattern, row[2])  # 찾아낸 제목에서 키워드로 필터링
+            animal = re.search(cc.pattern_title_animal(), row[2])
+            plant = re.search(cc.pattern_title_plant(), row[2])
+            if animal is not None:
+                pet_cat_cd = 'animal'
+                match = animal
+            elif plant is not None:
+                pet_cat_cd = 'plant'
+                match = plant
+            else:
+                pet_cat_cd = ''
+                match = False
+
             pattern_host = r'주 최 \: \<\/dt\>\<dd\>(.*)\<\/dd\>' #
-            pattern_manage = r'주 관 \: \<\/dt\>\<dd\>(.*)\<\/dd\>' #
+            pattern_supvsn = r'주 관 \: \<\/dt\>\<dd\>(.*)\<\/dd\>' #
+            pattern_addt_dtl = r'장 소 \: \<\/dt\>\<dd\>(.*)\<\/dd\>' #
             pattern_date = r'기 간 \: \<\/dt\>\<dd\>(.*)\<\/dd\>' #
             pattern_time = r'시 간 \: \<\/dt\>\<dd\>(.*)\<\/dd\>' #
-            pattern_place = r'장 소 \: \<\/dt\>\<dd\>(.*)\<\/dd\>' #
-            pattern_money = r'\"입장료\".*\<\/dt\>\n\<dd\>(.*)\<\/dd\>'
+            pattern_cost = r'\"입장료\".*\<\/dt\>\n\<dd\>(.*)\<\/dd\>'
             pattern_phone = r'연락처 \: \<\/dt\>\<dd\>(.*)\<\/dd\>' #
-            pattern_url = row[6]  # 해당 페이지 주소
-            pattern_home = r'홈페이지 \: \<\/dt\>\<dd\>\<a.*\>(.*)\<\/a\>\<\/dd\>' #
-            now = datetime.datetime.now()
-            reg_date = now.strftime('%Y-%m-%d %H:%M:%S')
-            z_start = ''
-            z_end = ''
-            if match2:
-                place = re.findall(pattern_place, row[5])
-                if len(place) != 0:
-                    str_place = place[0]
-                else:
-                    str_place = ''
-                date = re.findall(pattern_date, row[5])
-                tempdate = str(date).replace("['", "").replace("']", "").strip()
-                date_index = tempdate.find('~')
-                date_start = tempdate[0:date_index].replace('.', '-')
-                date_end = tempdate[date_index+1:len(tempdate)].replace('.', '-')
-                time = re.findall(pattern_time, row[5])
-                if len(time) > 0:
-                    temptime = str(time).replace("['", "").replace("']", "").strip()
-                    time_index = temptime.find('~')
-                    time_start = temptime[0:time_index]
-                    time_end = temptime[time_index+1:len(temptime)]
-                else:
-                    time_start = '-'
-                    time_end = '-'
-                phone = re.findall(pattern_phone, row[5])
-                if len(phone) != 0:
-                    str_phone = phone[0].strip()
-                else:
-                    str_phone = ''
-                home = re.findall(pattern_home, row[5])
-                if len(home) > 0:
-                    str_home = home[0].strip()
-                else:
-                    str_home = ''
-                manage = re.findall(pattern_manage, row[5])
-                if len(manage) != 0:
-                    str_manage = manage[0].strip()
-                else:
-                    str_manage = ''
+            pattern_home = r'홈페이지 \: \<\/dt\>\<dd\>\<a.*\>(.*)\<\/a\>\<\/dd\>'
+            # pattern_ctn = r''
+            reg_date = self.now.strftime('%Y-%m-%d %H:%M:%S')
+            source_url = row[7]
+
+            if match:
                 host = re.findall(pattern_host, row[5])
                 if len(host) != 0:
                     str_host = host[0]
                 else:
                     str_host = ''
-                money = re.findall(pattern_money, row[5])
-                if len(money) != 0:
-                    str_money = money[0]
+                supvsn = re.findall(pattern_supvsn, row[5])
+                if len(supvsn) != 0:
+                    str_supvsn = supvsn[0].strip()
                 else:
-                    str_money = ''
-                print("주최 {}".format(str_host))
-                print("주관 {}".format(str_manage))
-                print(date)
-                print(datetime.datetime.strptime(date_start.strip(), '%Y-%m-%d'))
-                d_start = datetime.datetime.strptime(date_start.strip(), '%Y-%m-%d')
-                print(datetime.datetime.strptime(date_end.strip(), '%Y-%m-%d'))
-                d_end = datetime.datetime.strptime(date_end.strip(), '%Y-%m-%d')
-                print('{start} ~ {end}'.format(start=time_start, end=time_end))
-                print("장소 {}".format(str_place))
-                print("돈 {}".format(str_money))
-                print("폰번호 {}".format(str_phone))
-                print("홈페이지 {}".format(str_home))
+                    str_supvsn = ''
+                addt_dtl = re.findall(pattern_addt_dtl, row[5])
+                if len(addt_dtl) != 0:
+                    str_addt_dtl = addt_dtl[0]
+                else:
+                    str_addt_dtl = ''
+                date = re.findall(pattern_date, row[5])
+                tempdate = str(date).replace("['", "").replace("']", "").strip()
+                date_index = tempdate.find('~')
+                date_start = datetime.datetime.strptime(tempdate[0:date_index].replace('.', '-').strip(), '%Y-%m-%d')
+                date_end = datetime.datetime.strptime(tempdate[date_index+1:len(tempdate)].replace('.', '-').strip(), '%Y-%m-%d')
 
-                data['convention_name'] = self.convention_name
-                data['event_name'] = match2.string
-                data['event_type'] = row[3]
-                data['place'] = place[0]
-                data['date_start'] = d_start
-                data['data_end'] = d_end
-                data['time_start'] = '-' if time_start == '' else time_start
-                data['time_end'] = '-' if time_end == '' else time_end
-                data['phone'] = phone[0]
-                data['home_page'] = str_home
-                data['manage'] = str_manage
-                data['host'] = str_host
-                data['money'] = str_money
-                data['source_url'] = pattern_url
-                data['reg_date'] = reg_date
-                cc.content_insert(data)
+                time = re.findall(pattern_time, row[5])
+                if len(time) > 0:
+                    str_time = time[0]
+                else:
+                    str_time = ''
+                cost = re.findall(pattern_cost, row[5])
+                if len(cost) != 0:
+                    str_cost = cost[0]
+                else:
+                    str_cost = ''
+
+                phone = re.findall(pattern_phone, row[5])
+                if len(phone) != 0:
+                    str_phone = phone[0].strip()
+                else:
+                    str_phone = ''
+
+                home = re.findall(pattern_home, row[5])
+                if len(home[0].strip()) > 0:
+                    str_home_url = home[0]
+                    res = urllib.request.urlopen(str_home_url).read()
+                    soup = Bs(res, 'html.parser')
+                    home_title = soup.find_all('title', limit=1)
+                    str_home_title = home_title[0].text
+                else:
+                    str_home_url = ''
+                    str_home_title = ''
+
+                data['TP_CD'] = 'fest'
+                data['PET_CAT_CD'] = pet_cat_cd
+                data['TTL'] = match.string
+                data['HOST_NM'] = str_host
+                data['SUPVSN'] = str_host
+                data['ADDR'] = convention_info[0][4]
+                data['ADDR_DTL'] = str_addt_dtl
+                data['LOC'] = self.convention_name
+                data['ZIPNO'] = convention_info[0][6]
+                data['LAT'] = convention_info[0][7]
+                data['LNG'] = convention_info[0][8]
+                data['FR_DATE'] = date_start
+                data['TO_DATE'] = date_end
+                data['EVNT_TIME'] = str_time
+                data['ONLN_YN'] = 'N'
+                data['OFFLN_YN'] = 'Y'
+                data['ENTR_COST'] = str_cost
+                data['HPG_NM'] = str_home_title
+                data['HPG_URL'] = str_home_url
+                data['QNA'] = str_phone
+                data['CTN'] = row[6] if row[6] is not None else ''
+                data['M_IMG_ID'] = row[8] if row[8] is not None else ''
+                data['LIST_IMG_ID'] = ''
+                data['COMP_NM'] = str_host
+                data['DAY_CD'] = cc.get_day_cd(date_start, date_end)
+                data['RGN_CD'] = cc.get_rgn_cd(convention_info[0][4][0:2])
+                data['DEL_YN'] = 'N'
+                data['REG_ID'] = 'crawler'
+                data['REG_DTTM'] = reg_date
+                data['UPD_ID'] = 'crawler'
+                data['UPD_DTTM'] = reg_date
+                data['CRAWL_VERSION'] = crawl_version
+                data['SOURCE_URL'] = source_url
+                data['CONVENTION_NAME'] = self.convention_name
+                data['EVENT_TYPE'] = row[3] if row[3] is not None else ''
+                cc.evnt_insert(data)
         cc.commit()
         cc.close()
 
 
 if __name__ == '__main__':
     crawl = CrawlClass()
-    crawl.test_insert1()
+    crawl.refine()

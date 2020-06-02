@@ -84,7 +84,7 @@ class CrawlClass(object):
                     str_home_url = home[0]
                     res = urllib.request.urlopen(str_home_url).read()
                     soup = Bs(res, 'html.parser')
-                    home_title = soup.select('head > title')
+                    home_title = soup.find_all('title', limit=1)
                     str_home_title = home_title[0].text
                 else:
                     str_home_url = ''

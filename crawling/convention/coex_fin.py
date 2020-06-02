@@ -1,13 +1,14 @@
 # coding=utf-8
-from urllib import parse
-
 from bs4 import BeautifulSoup as Bs
 from crawling.convention import conn_mysql as cm
+from urllib import parse
 from urllib.parse import quote
 from selenium import webdriver
-from selenium.webdriver.common.by import By
+# from selenium.webdriver.common.by import By
 import datetime
+# import math
 import os
+# import re
 # import time
 import urllib.request
 
@@ -44,7 +45,10 @@ class CrawlClass(object):
             self.page_source = self.soup.select('#primary > div > div > div > div > div.v-contents')
             event_type = self.soup.select('#primary > div > div > div > div > header > p.type > span')
             event_content = self.soup.select('#primary > div > div > div > div > div.v-contents > div.exhi-summary.clearfix > div.summary-desc')
-            row['ctn'] = event_content[0].text
+            if len(event_content) > 0:
+                row['ctn'] = event_content[0].text
+            else:
+                row['ctn'] = ''
             row['page_source'] = str(self.page_source)
             row['event_type'] = event_type[0].text
             temp_img_src = self.soup.select('#primary > div > div > div > div > div.v-contents > div.exhi-info.clearfix > img')
@@ -53,9 +57,10 @@ class CrawlClass(object):
             file_name = date_now + str(ab.microsecond)
             if len(temp_img_src) > 0:
                 temp_src = temp_img_src[0].attrs.get('src')
-                a = parse.urlparse(temp_src)
-                print(a)
-                urllib.request.urlretrieve(quote(temp_src), '../../originalDatas/' + file_name + '.png')
+                encoding_url = parse.urlparse(temp_src)
+                print(encoding_url)
+                # urllib.request.urlretrieve(quote(temp_src), '../../originalDatas/' + file_name + '.png')
+                urllib.request.urlretrieve(encoding_url.scheme + '://' + encoding_url.netloc + quote(encoding_url.path), '../../originalDatas/' + file_name + '.png')
                 img_src = file_name + '.png'
             else:
                 img_src = ''
@@ -114,8 +119,4 @@ class CrawlClass(object):
 
 if __name__ == '__main__':
     crawl = CrawlClass()
-#    crawl.run_crawl()
-    a = parse.urlparse('http://210.116.77.61/wp-content/uploads/2020/05/코엑스-제출-엠블럼200507-300x198.png')
-    q = parse.parse_qs(a.query)
-    b = parse.urlencode(q, doseq=True)
-    print(b)
+    crawl.run_crawl()

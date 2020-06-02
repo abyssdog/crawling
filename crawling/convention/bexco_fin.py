@@ -5,7 +5,9 @@ from urllib.parse import quote
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 import datetime
+# import math
 import os
+# import re
 # import time
 import urllib.request
 
@@ -43,8 +45,8 @@ class CrawlClass(object):
             html = self.driver.page_source
             self.soup = Bs(html, 'html.parser')
             self.page_source = self.soup.select('#contents > div.cont > div.view_wrap')
-            event_cotent = self.soup.select('#contents > div.cont > div.view_wrap > div.detail_sec')
-            row['ctn'] = event_cotent[0].text
+            event_content = self.soup.select('#contents > div.cont > div.view_wrap > div.detail_sec')
+            row['ctn'] = event_content[0].text
             row['page_source'] = str(self.page_source)
             temp_img_src = self.soup.select('#contents > div.cont > div.view_wrap > div.info_sec > p > img')
             if len(temp_img_src) == 0:

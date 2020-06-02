@@ -1,5 +1,4 @@
-import re
-
+# coding=utf-8
 from bs4 import BeautifulSoup as Bs
 from crawling.convention import conn_mysql as cm
 from selenium import webdriver
@@ -7,10 +6,14 @@ from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import Select, WebDriverWait
+from urllib import parse
+from urllib.parse import quote
 import datetime
+import math
 import os
-# import math
-# import re
+import re
+import urllib
+import urllib.request
 
 
 class CrawlClass(object):
@@ -52,6 +55,24 @@ class CrawlClass(object):
             self.page_source = self.soup.select('#eventView > table > tbody > tr > td')
             row['page_source'] = str(self.page_source)
             print(row['event_name'])
+            row['ctn'] = ''
+            temp_img_src = self.soup.select('#eventView > table > tbody > tr > th > img')
+            ab = datetime.datetime.now()
+            date_now = ab.strftime('%Y%m%d%H%M%S')
+            file_name = date_now + str(ab.microsecond)
+            if len(temp_img_src) > 0:
+                temp_src = temp_img_src[0].attrs.get('src')
+                if '/img/comm/noEvent.gif' != temp_src:
+                    encoding_url = parse.urlparse(temp_src)
+                    print(encoding_url)
+                    urllib.request.urlretrieve(encoding_url.scheme + '://' + encoding_url.netloc + quote(encoding_url.path),
+                                               '../../originalDatas/' + file_name + '.png')
+                    img_src = file_name + '.png'
+                else:
+                    img_src = ''
+            else:
+                img_src = ''
+            row['img_src'] = img_src
             self.cm.content_insert(row, 'original')
 
     def duplecate_check(self, check_lists):
