@@ -1,5 +1,8 @@
 import datetime
+import json
+
 import pymysql
+import requests
 
 
 class CrawlClass(object):
@@ -14,7 +17,7 @@ class CrawlClass(object):
         )
 
     def pattern_title_animal(self):
-        title_pattern = r"(캣|도그|펫|동물|애견|애완|렙타일)"
+        title_pattern = r"(캣|도그|펫|동물|애견|애완|렙타일|건축)"
         return title_pattern
 
     def pattern_title_plant(self):
@@ -32,6 +35,30 @@ class CrawlClass(object):
         }
         rgn_value = dict_rgn['{}'.format(rgn_code)]
         return rgn_value
+
+    def get_address(self, search_word):
+        row = {}
+        url = 'https://dapi.kakao.com/v2/local/search/keyword.json?query={}'.format(search_word)
+        headers = {
+            "Authorization": "KakaoAK b3489265c0604b575bc22eda5da2e18f"
+        }
+        places = requests.get(url, headers=headers).json()['documents']
+        for place in places:
+            if place['place_name'] == search_word:
+                row = {
+                    'road_address_name': place['road_address_name'],
+                    'x': place['x'],
+                    'y': place['y']
+                }
+        return row
+
+    def get_location(self, addr):
+        url = 'https://dapi.kakao.com/v2/local/search/address.json?query=' + addr
+        headers = {"Authorization": "KakaoAK b3489265c0604b575bc22eda5da2e18f"}
+        result = json.loads(str(requests.get(url, headers=headers).text))
+        match_first = result['documents'][0]['address']
+        print(match_first)
+        return float(match_first['y']), float(match_first['x'])
 
     def get_day_cd(self, date_start, date_end):
         # weekday()  # {0:월, 1:화, 2:수, 3:목, 4:금, 5:토, 6:일}
@@ -147,4 +174,5 @@ class CrawlClass(object):
 
 if __name__ == '__main__':
     cc = CrawlClass()
-
+    aa = cc.get_address('에버랜드')
+    print(aa)

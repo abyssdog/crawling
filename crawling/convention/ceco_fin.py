@@ -1,10 +1,11 @@
 # coding=utf-8
 from bs4 import BeautifulSoup as Bs
 from crawling.convention import conn_mysql as cm
-from urllib.parse import quote
 from selenium import webdriver
 from selenium.webdriver.common.by import By
+from urllib.parse import quote
 import datetime
+import math
 import os
 import re
 # import time
