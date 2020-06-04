@@ -17,7 +17,7 @@ class CrawlClass(object):
         )
 
     def pattern_title_animal(self):
-        title_pattern = r"(캣|도그|펫|동물|애견|애완|렙타일|건축)"
+        title_pattern = r"(캣|도그|펫|동물|애견|애완|렙타일|곤충)"
         return title_pattern
 
     def pattern_title_plant(self):

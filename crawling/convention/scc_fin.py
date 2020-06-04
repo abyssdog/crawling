@@ -1,14 +1,17 @@
+# coding=utf-8
 from bs4 import BeautifulSoup as Bs
-from selenium.common.exceptions import TimeoutException
-
 from crawling.convention import conn_mysql as cm
 from selenium import webdriver
+from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import Select, WebDriverWait
+from urllib import parse
+from urllib.parse import quote
 import datetime
 import os
 import time
+import urllib.request
 
 
 class CrawlClass(object):
@@ -36,6 +39,11 @@ class CrawlClass(object):
         self.driver.close()
 
     def crawl_append(self, crawl_results):
+        opener = urllib.request.build_opener()
+        opener.addheaders = [('User-Agent',
+                              'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/36.0.1941.0 Safari/537.36')]
+        urllib.request.install_opener(opener)
+
         for row in crawl_results:
             self.driver.get(row['source_url'])
             html = self.driver.page_source
@@ -50,7 +58,27 @@ class CrawlClass(object):
             self.page_source += self.soup.select(
                 '#page-content > section.l-section.wpb_row.height_small.sidebar-fix.vc_hidden-xs > div > div > div > div > div > div:nth-child(7) > div.vc_col-sm-10.wpb_column.vc_column_container > div > div > div.w-post-elm.post_custom_field.type_text.color_link_inherit > a')
             row['page_source'] = str(self.page_source)
+            event_content = self.soup.select('#page-content > section.l-section.wpb_row.height_small.sidebar-fix.vc_hidden-xs > div > div > div > div > div > div:nth-child(12) > div.vc_col-sm-10.wpb_column.vc_column_container > div > div > div > p')
+            if len(event_content) > 0:
+                row['ctn'] = event_content[0].text
+            else:
+                row['ctn'] = ''
             print(row['event_name'])
+            temp_img_src = self.soup.select(
+                '#page-content > section.l-section.wpb_row.height_small.sidebar-fix.vc_hidden-xs > div > div > div > div > div > div:nth-child(3) > div.vc_col-sm-3.wpb_column.vc_column_container > div > div > div > img')
+            ab = datetime.datetime.now()
+            date_now = ab.strftime('%Y%m%d%H%M%S')
+            file_name = date_now + str(ab.microsecond)
+            if len(temp_img_src) > 0:
+                temp_src = temp_img_src[0].attrs.get('src')
+                encoding_url = parse.urlparse(temp_src)
+                print(encoding_url.scheme + '://' + encoding_url.netloc + quote(encoding_url.path))
+                urllib.request.urlretrieve(encoding_url.scheme + '://' + encoding_url.netloc + quote(encoding_url.path),
+                                           '../../originalDatas/' + file_name + '.png')
+                img_src = file_name + '.png'
+            else:
+                img_src = ''
+            row['img_src'] = img_src
             self.cm.content_insert(row, 'original')
 
     def crawl(self):

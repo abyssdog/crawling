@@ -1,14 +1,20 @@
+import calendar
+
 from bs4 import BeautifulSoup as Bs
 from crawling.convention import conn_mysql as cm
 from selenium import webdriver
 from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import Select, WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.support.wait import WebDriverWait
-import calendar
+from urllib import parse
+from urllib.error import URLError
+from urllib.parse import quote
 import datetime
+import math
 import os
 import re
 import time
+import urllib.request
 
 
 class CrawlClass(object):
@@ -49,7 +55,22 @@ class CrawlClass(object):
             self.page_source = self.soup.select('#viewForm > div.view_box > dl')
             self.page_source += self.soup.select('#viewForm > div.view_box > p')
             row['page_source'] = str(self.page_source)
+            event_content = self.soup.select('#viewForm > div.view_box > p')
+            row['ctn'] = event_content[0].text
             print(row['event_name'])
+            temp_img_src = self.soup.select('#pop_detailSche > div.sche-info > span > img')
+            ab = datetime.datetime.now()
+            date_now = ab.strftime('%Y%m%d%H%M%S')
+            file_name = date_now + str(ab.microsecond)
+            if len(temp_img_src) > 0:
+                temp_src = temp_img_src[0].attrs.get('src')
+                encoding_url = parse.urlparse(temp_src)
+                urllib.request.urlretrieve(encoding_url.scheme + '://' + encoding_url.netloc + quote(encoding_url.path), '../../originalDatas/' + file_name + '.png')
+                img_src = file_name + '.png'
+            else:
+                img_src = ''
+            row['img_src'] = img_src
+
             self.cm.content_insert(row, 'original')
 
     def crawl(self):

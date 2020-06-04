@@ -1,12 +1,17 @@
 from bs4 import BeautifulSoup as Bs
 from crawling.convention import conn_mysql as cm
 from selenium import webdriver
+from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import Select, WebDriverWait
-# from selenium.webdriver.common.by import By
+from selenium.webdriver.support import expected_conditions as EC
+from urllib import parse
+from urllib.parse import quote
 import datetime
+import math
 import os
-# import math
-# import re
+import re
+# import time
+import urllib.request
 
 
 class CrawlClass(object):
@@ -21,6 +26,7 @@ class CrawlClass(object):
         self.select_url = ''
         self.event_type = ''
         self.page_source = ''
+        self.url_base = 'https://www.kintex.com'
         self.url = 'https://www.kintex.com/client/c010101/c010101_00.jsp'
         self.url_dept = '?sField=&sWord=&eventClCode=&prmtrNm=&' \
                         'koreanEventNm=&searchType=year&yearYear={year}&cPage={page}'
@@ -42,6 +48,26 @@ class CrawlClass(object):
             self.soup = Bs(html, 'html.parser')
             self.page_source = self.soup.select('#content > div.schedule > div')
             row['page_source'] = str(self.page_source)
+            event_content = self.soup.select('#content > div.schedule > div > div > dl:nth-child(11) > dd')
+            if len(event_content) > 0:
+                row['ctn'] = event_content[0].text
+            else:
+                row['ctn'] = ''
+            temp_img_src = self.soup.select('#PageWrap > div > div.ViewInfo > p > img')
+            ab = datetime.datetime.now()
+            date_now = ab.strftime('%Y%m%d%H%M%S')
+            file_name = date_now + str(ab.microsecond)
+            if len(temp_img_src) > 0:
+                temp_src = temp_img_src[0].attrs.get('src')
+                encoding_url = parse.urlparse(temp_src[3:len(temp_src)])
+                print(encoding_url)
+                urllib.request.urlretrieve(
+                    self.url_base + quote(encoding_url.path),
+                    '../../originalDatas/' + file_name + '.png')
+                img_src = file_name + '.png'
+            else:
+                img_src = ''
+            row['img_src'] = img_src
             print(row['event_name'])
             self.cm.content_insert(row, 'original')
 

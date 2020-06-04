@@ -1,14 +1,16 @@
-import re
-
 from bs4 import BeautifulSoup as Bs
 from crawling.convention import conn_mysql as cm
 from selenium import webdriver
+from urllib import parse
+from urllib.parse import quote
 from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import Select, WebDriverWait
 import datetime
 import os
+import re
+import urllib.request
 
 
 class CrawlClass(object):
@@ -23,6 +25,7 @@ class CrawlClass(object):
         self.select_url = ''
         self.event_type = ''
         self.page_source = ''
+        self.url_base = 'http://setec.or.kr'
         self.url = 'http://setec.or.kr/fus/bbs/selectBoardList.do' \
                    '?menuId=MNU_0000000000000053&bbsId=BBSMSTR_000000000032'
         self.url_dept = '&searchCnd=99&pageIndex={page}'
@@ -46,6 +49,27 @@ class CrawlClass(object):
             self.page_source += self.soup.select('#container > div > div.detail')
             row['page_source'] = str(self.page_source)
             print(row['event_name'])
+            event_content = self.soup.select('#container > div > div.detail')
+            if len(event_content) > 0:
+                row['ctn'] = event_content[0].text
+            else:
+                row['ctn'] = ''
+            temp_img_src = self.soup.select(
+                '#container > div > div.info_wrap > div.img_area > div.big > div > div.bx-viewport > ul > img')
+            ab = datetime.datetime.now()
+            date_now = ab.strftime('%Y%m%d%H%M%S')
+            file_name = date_now + str(ab.microsecond)
+            if len(temp_img_src) > 0:
+                temp_src = temp_img_src[0].attrs.get('src')
+                if '/template/web//images/board/no_img.gif' != temp_src:
+                    urllib.request.urlretrieve(self.url_base+temp_src,
+                                               '../../originalDatas/' + file_name + '.png')
+                    img_src = file_name + '.png'
+                else:
+                    img_src = ''
+            else:
+                img_src = ''
+            row['img_src'] = img_src
             self.cm.content_insert(row, 'original')
 
     def crawl(self):
