@@ -9,14 +9,14 @@ def insert_excel_to_db():
                            password='dangam1234', db='convention', charset='utf8mb4')
     try:
         with conn.cursor() as curs:
-            sql = """insert into animal_hospital values(
+            sql = """insert into animal_funeral values(
                 %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
                 %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
                 %s, %s, %s, %s, %s, %s, %s, %s
             )
             """
-            wb = load_workbook(r'C:\동물병원.xlsx', data_only=True)
-            ws = wb['동물병원_1']
+            wb = load_workbook(r'C:\funi.xlsx', data_only=True)
+            ws = wb['동물장묘업_1']
 
             iter_rows = iter(ws.rows)
             next(iter_rows)

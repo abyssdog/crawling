@@ -5,7 +5,7 @@ import pymysql
 import requests
 
 
-class getHospitalData:
+class kakao_api:
     def __init__(self):
         self.key_api = "b3489265c0604b575bc22eda5da2e18f"
 
@@ -54,6 +54,8 @@ class getHospitalData:
         return float(match_first['x']), float(match_first['y'])
 
     def get_localdata(self):
+        ka = kakao_api()
+        rows = []
         conn = pymysql.connect(
             charset='utf8',
             db='convention',
@@ -63,48 +65,25 @@ class getHospitalData:
             user='root'
         )
         curs = conn.cursor()
-        # business_condition_code = '01' => 정상영업
-        sql = """SELECT * FROM animal_hospital
-                  WHERE business_condition_code = '01'
-                    AND location_x != '0.0'"""
+        sql = """SELECT id, company_name, location_address, road_name_address
+                       FROM animal_sales"""
         curs.execute(sql)
         sql_rows = curs.fetchall()
+        for row in sql_rows:
+            xy = ka.get_location(row[2], row[3])
+            _dict = {"id": row[0], "location_x": xy[0], "location_y": xy[1]}
+            rows.append(_dict)
+        for row in rows:
+            sql = """update animal_funeral
+                        set location_x = {x}, location_y = {y}
+                      where id = {id}""".format(x=row['location_x'], y=row['location_y'], id=row['id'])
+            curs.execute(sql)
         conn.commit()
         conn.close()
-        return sql_rows
 
-    def get_data(self):
-        conn = pymysql.connect(
-            charset='utf8',
-            db='convention',
-            host='localhost',
-            password='dangam1234',
-            port=3306,
-            user='root'
-        )
-        curs = conn.cursor()
-        # business_condition_code = '01' => 정상영업
-        sql = """SELECT * FROM animal_hospital
-                  WHERE business_condition_code = '01'
-                    AND location_x != '0.0'"""
-        curs.execute(sql)
-        sql_rows = curs.fetchall()
-        conn.commit()
-        conn.close()
-        return sql_rows
-
-# V call animal_hospital data
-# V search kakao map api and save location x,y
-# crawling ranking (google)
-# crawling operation time (google and naver map)
-# save csv
-'//*[@id="pane"]/div/div[1]/div/div/div[8]/button/div/div[2]/div[1]'
 
 if __name__ == '__main__':
-    rows = []
-    HD = getHospitalData()
-    selected_rows = HD.get_localdata()
-    for row in selected_rows:
-        xy = HD.get_location(row[18], row[19])
-        _dict = {"id": row[0], "location_x": xy[0], "location_y": xy[1], 'location_address': row[18], 'road_name_address':row[19]}
-        rows.append(_dict)
+    k = kakao_api()
+    # k.get_localdata()
+    a = k.get_location('우리집막내둥이', '')
+    print(a)
