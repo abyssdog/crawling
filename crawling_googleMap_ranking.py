@@ -37,36 +37,10 @@ class CrawlClass(object):
 
     def run_crawl(self, searchList):
         # keyword = self.get_search_list()
+        # a = self.crawl(searchList)
         a = self.crawl(searchList)
         self.cm.close()
         self.driver.close()
-
-    def crawl(self, search_list):
-        res = []
-        self.driver.get(self.url)
-        self.driver.maximize_window()
-        # 0, 18, 19, 21
-        for row in search_list:
-            self.driver.find_element_by_xpath('//*[@id="searchboxinput"]').send_keys(row[21])
-            self.driver.find_element_by_xpath('//*[@id="searchboxinput"]').send_keys(Keys.ENTER)
-            check_flag = self.driver.find_elements_by_xpath('//*[@id="pane"]/div/div[1]/div/div/div[4]/div[1]/div')
-            if len(check_flag) > 2:
-                listName = self.driver.find_elements_by_xpath('//*[@id="pane"]/div/div[1]/div/div/div[4]/div[1]/div/div[1]/div[1]/div[1]/div[1]/div[2]/h3/span')
-                listAddress = self.driver.find_elements_by_xpath('//*[@id="pane"]/div/div[1]/div/div/div[4]/div[1]/div[1]/div/div[1]/div[2]/span[6]')
-                #for addr in listAddress:
-                #    if addr == searchAddress:
-            else:
-                address = self.driver.find_element_by_xpath('//*[@id="pane"]/div/div[1]/div/div/div[8]/button/div/div[2]/div[1]').text
-
-                arr = {
-                    'id': row[0],
-                    'name': row[21],
-                    'address_location': row[18],
-                    'address_road': row[19],
-                    'ranking': ''
-                }
-                res.append(arr)
-        return res
 
     def get_search_list(self):
         conn = pymysql.connect(
@@ -80,24 +54,110 @@ class CrawlClass(object):
         curs = conn.cursor()
         # business_condition_code = '01' => 정상영업
         sql = """SELECT location_address, road_name_address, company_name
-  FROM animal_hospital
- WHERE business_condition_code = '01'
-   AND location_x != '0.0'
-   AND company_name LIKE '%에이블%'
-'"""
+                  FROM animal_hospital
+                 WHERE business_condition_code = '01'
+                   AND location_x != '0.0'
+                   AND company_name LIKE '%에이블%'"""
         curs.execute(sql)
         sql_rows = curs.fetchall()
         conn.commit()
         conn.close()
         return sql_rows
 
+    def compare_with_address(self, address_base, address_target):
+        ab = address_base.split()
+        at = address_target.split()
+        cnt = 0
+        for word in ab:
+            if word in at:
+                cnt += 1
+        if len(ab) == cnt:
+            return True
+        else:
+            return False
+
+    def crawl(self, search_list):
+        res = []
+        self.driver.get(self.url)
+        self.driver.maximize_window()
+        # 0 id, 18 address, 19 road address , 21 company name
+        for row in search_list:
+            address_location = row[18]
+            temp = row[19].split(',')
+            address_road = temp[0]
+            # input search keyword
+            self.driver.find_element_by_xpath('//*[@id="searchboxinput"]').send_keys(row[21])
+            self.driver.find_element_by_xpath('//*[@id="searchboxinput"]').send_keys(Keys.ENTER)
+            try:
+                # 단일 개체 확인
+                a = self.driver.find_element_by_xpath('/html/body/jsl/div[3]/div[9]/div[8]/div/div[1]/div/div/div[2]/div[1]/div[2]/div/div[1]/span[1]/span/span')
+            except NoSuchElementException:
+                print('a')
+            # search result > 2
+            searched_list = self.driver.find_elements_by_xpath('//*[@id="pane"]/div/div[1]/div/div/div[4]/div[1]/div')
+            if len(searched_list) > 2:
+                listName = self.driver.find_elements_by_xpath('//*[@id="pane"]/div/div[1]/div/div/div[4]/div[1]/div/div[1]/div[1]/div[1]/div[1]/div[2]/h3/span')
+                listAddress = self.driver.find_elements_by_xpath('//*[@id="pane"]/div/div[1]/div/div/div[4]/div[1]/div[1]/div/div[1]/div[2]/span[6]')
+                #for addr in listAddress:
+                #    if addr == searchAddress:
+            else:
+                address_target = self.driver.find_element_by_xpath('//*[@id="pane"]/div/div[1]/div/div/div[8]/button/div/div[2]/div[1]').text
+                location = self.compare_with_address(address_base=address_location, address_target=address_target)
+                road = self.compare_with_address(address_base=address_road, address_target=address_target)
+                if road is True:
+                    print('aa')
+                arr = {
+                    'id': row[0],
+                    'name': row[21],
+                    'address_location': row[18],
+                    'address_road': row[19],
+                    'ranking': ''
+                }
+                res.append(arr)
+        return res
+
 
 if __name__ == '__main__':
-    crawl = CrawlClass()
-    crawl.run_crawl()
+    # crawl = CrawlClass()
+    # crawl.run_crawl()
     '''f = '바우뫼로'
     a = re.findall("([가-힣]*)", '서울특별시 서초구 바우뫼로 211 (양재동)')
     b = re.match("([가-힣]*)", '서울특별시 서초구 바우뫼로 211 (양재동)')
     c = re.search(f, '서울특별시 서초구 바우뫼로 211')
     if c:
         print(a[4])'''
+    option = webdriver.ChromeOptions()
+    option.add_argument('window-size=1920x1080')
+    driver = webdriver.Chrome(executable_path=os.path.abspath("chromedriver.exe"), options=option)
+
+    driver.get('https://www.google.com/maps')
+    driver.maximize_window()
+
+    driver.find_element_by_xpath('//*[@id="searchboxinput"]').send_keys('준동물병원')
+    driver.find_element_by_xpath('//*[@id="searchboxinput"]').send_keys(Keys.ENTER)
+    # time.sleep(2)
+    try:
+        # 단일 개체 확인
+        a = driver.find_element_by_xpath(
+            '/html/body/jsl/div[3]/div[9]/div[8]/div/div[1]/div/div/div[2]/div[1]/div[2]/div/div[1]/span[1]/span/span')
+        temp_flag = 'one'
+    except NoSuchElementException:
+        # 리스트 확인
+        # 딜레이 추가함. (랜더링 시간)
+        event = WebDriverWait(driver, 10).until(
+            EC.presence_of_all_elements_located(
+                (By.XPATH, '//*[@id="pane"]/div/div[1]/div/div/div[4]/div[1]/div/div[1]/div[1]/div[1]/div[1]/div[2]/h3/span')))
+        rankings = driver.find_elements_by_xpath(
+            '//*[@id="pane"]/div/div[1]/div/div/div[4]/div[1]/div/div[1]/div[1]/div[1]/div[1]/div[2]/span[3]/span[1]/span[1]/span')
+        for t in event:
+            print(t.text)
+        for r in rankings:
+            print(r.text)
+        temp_flag = 'list'
+        a = driver.find_elements_by_xpath('/html/body/jsl/div[3]/div[9]/div[8]/div/div[1]/div/div/div[4]/div[1]/div[3]/div[1]/div[1]/div[1]/div[1]/div[2]/h3/span')
+        searched_list = driver.find_elements_by_xpath('//*[@id="pane"]/div/div[1]/div/div/div[4]/div[1]/div')
+        listName = driver.find_elements_by_xpath(
+            '//*[@id="pane"]/div/div[1]/div/div/div[4]/div[1]/div/div[1]/div[1]/div[1]/div[1]/div[2]/h3/span')
+        listAddress = driver.find_elements_by_xpath(
+            '//*[@id="pane"]/div/div[1]/div/div/div[4]/div[1]/div[1]/div/div[1]/div[2]/span[6]')
+    print(temp_flag)
