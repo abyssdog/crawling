@@ -5,6 +5,7 @@ import pymysql
 import requests
 
 import crawling_googleMap_ranking as cgr
+import crawling_kakaoMap_ranking as ckr
 
 
 class getHospitalData:
@@ -106,10 +107,12 @@ class getHospitalData:
 '//*[@id="pane"]/div/div[1]/div/div/div[4]/div[1]/div[1]'
 if __name__ == '__main__':
     rows = []
-    c = cgr.CrawlClass()
+    c = ckr.CrawlClass()
     HD = getHospitalData()
     selected_rows = HD.get_localdata()
-    selected_rows_added_ranking = c.run_crawl(selected_rows)
+    c.run_crawl(selected_rows)
+    # selected_rows_added_ranking = c.run_crawl(selected_rows)
+
     #for row in selected_rows:
     #    xy = HD.get_location(row[18], row[19])
     #    _dict = {"id": row[0], "location_x": xy[0], "location_y": xy[1], 'location_address': row[18], 'road_name_address':row[19]}
