@@ -100,7 +100,7 @@ class CrawlClass(object):
             temp = row[19].split(',')
             address_road = temp[0].split()
             search_keyword = address_location[0]+' '+address_location[1]+' '+row[21]
-
+            여기서 에러발생함.
             # search keyword
             self.driver.find_element_by_xpath('//*[@id="search.keyword.query"]').clear()
             self.driver.find_element_by_xpath('//*[@id="search.keyword.query"]').send_keys(search_keyword)
