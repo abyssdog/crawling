@@ -67,9 +67,8 @@ class getHospitalData:
         )
         curs = conn.cursor()
         # business_condition_code = '01' => 정상영업
-        sql = """SELECT * FROM animal_hospital
-                  WHERE business_condition_code = '01'
-                    AND location_x != '0.0'"""
+        sql = """SELECT * FROM animal_funeral
+                  WHERE business_condition_code = '01'"""
         curs.execute(sql)
         sql_rows = curs.fetchall()
         conn.commit()
@@ -98,8 +97,8 @@ class getHospitalData:
 
 # V call animal_hospital data
 # V search kakao map api and save location x,y
-# crawling ranking (google) => google map crawling
-# crawling operation time (google and naver map)
+# V crawling ranking (kakao) => google map crawling
+# V crawling operation time (kakao)
 # save csv
 '//*[@id="pane"]/div/div[1]/div/div/div[8]/button/div/div[2]/div[1]'
 '//*[@id="pane"]/div/div[1]/div/div/div[8]/button/div/div[2]/div[1]'
