@@ -10,9 +10,14 @@ class kakao_api:
         self.key_api = "b3489265c0604b575bc22eda5da2e18f"
 
     def get_location_single(self, addr, name):
-        # temp_addr = addr.split()
+        '''search = ''
+        temp_addr = addr.split()
+        for a in range(0, len(temp_addr)-1):
+          search = search + temp_addr[a] + ' ' '''
         # search = temp_addr[0]+' '+temp_addr[1]+' '+temp_addr[2]+' '+name
-        search = addr + ' ' + name
+        # search = addr + ' ' + name
+        search = addr
+
         try:
             url = 'https://dapi.kakao.com/v2/local/search/address.json?query=' + search
             headers = {"Authorization": "KakaoAK b3489265c0604b575bc22eda5da2e18f"}
@@ -99,8 +104,9 @@ class kakao_api:
         )
         curs = conn.cursor()
         sql = """SELECT id, company, address
-                   FROM animal_company
-                  WHERE location_x = '0.0'"""
+                   FROM animal_company 
+                  WHERE agent = 'y' 
+                    AND location_x = '0.0'"""
         curs.execute(sql)
         sql_rows = curs.fetchall()
         for row in sql_rows:
@@ -120,6 +126,6 @@ class kakao_api:
 
 if __name__ == '__main__':
     k = kakao_api()
-    k.get_localdata()
-    # a = k.get_location_single('제주특별자치도 서귀포시 강정동', '도그앤캣')
-    # print(a)
+    # k.get_localdata()
+    a = k.get_location_single('대전광역시 동구 가양동 414- 11', '가온동물병원')
+    print(a)
